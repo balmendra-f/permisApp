@@ -26,7 +26,6 @@ interface Solicitud {
   createdAt: any;
   updatedAt?: any;
   documento: any;
-  
 }
 
 type FilterType = "todas" | "aprobadas" | "rechazadas";
@@ -37,7 +36,7 @@ export default function HistorialSolicitudes() {
   const [filtroActivo, setFiltroActivo] = useState<FilterType>("todas");
 
   const solicitudesProcesadas = requests.filter(
-    (req: Solicitud) => !req.isPending
+    (req: Solicitud) => req.aproved === true || req.aproved === false
   );
 
   const solicitudesFiltradas = solicitudesProcesadas.filter(

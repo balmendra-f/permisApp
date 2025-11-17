@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getRequest } from "@/api/request/getRequest";
 import { getRequestsBySection } from "@/api/request/getRequestBySection";
+import { useAuth } from "@/providers/AuthProvider";
 
 export interface Request {
   updatedAt: any;
@@ -13,7 +13,7 @@ export interface Request {
   fechaInicio: any;
   fechaFin: any;
   isPending: boolean;
-  aproved: boolean;
+  aproved: boolean | null;
   createdAt: any;
   documento: any;
   username: string;
@@ -22,13 +22,13 @@ export interface Request {
 interface RequestsContextType {
   requests: Request[];
   loading: boolean;
-  fetchBySection: (section: string) => (() => void) | void;
+  refetch: () => void; 
 }
 
 const RequestsContext = createContext<RequestsContextType>({
   requests: [],
   loading: true,
-  fetchBySection: () => {},
+  refetch: () => {},
 });
 
 export const RequestsProvider = ({
@@ -36,22 +36,17 @@ export const RequestsProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { user } = useAuth();
+  const section = user?.section;
+
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = getRequest((data) => {
-      setRequests(data);
-      setLoading(false);
-    });
 
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, []);
-
-  const fetchBySection = (section: string) => {
+  const subscribe = () => {
+    if (!section) return;
     setLoading(true);
+
     const unsubscribe = getRequestsBySection(section, (data) => {
       setRequests(data);
       setLoading(false);
@@ -60,8 +55,26 @@ export const RequestsProvider = ({
     return unsubscribe;
   };
 
+  useEffect(() => {
+    let unsubscribe: any;
+
+    if (section) {
+      unsubscribe = subscribe();
+    }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [section]); 
+
   return (
-    <RequestsContext.Provider value={{ requests, loading, fetchBySection }}>
+    <RequestsContext.Provider
+      value={{
+        requests,
+        loading,
+        refetch: () => subscribe(),
+      }}
+    >
       {children}
     </RequestsContext.Provider>
   );

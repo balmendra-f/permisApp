@@ -10,9 +10,7 @@ const PermissionsScreen = () => {
   const { user } = useAuth();
   const username = user?.name;
   const { requests } = useRequests();
-  console.log(requests);
 
-  // Conteo según aproved
   const pendientes = requests.filter((r: any) => r.aproved === null).length;
   const aprobados = requests.filter((r: any) => r.aproved === true).length;
   const denegados = requests.filter((r: any) => r.aproved === false).length;

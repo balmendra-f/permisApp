@@ -10,19 +10,29 @@ export const onRequestApproved = onDocumentUpdated(
   async (event) => {
     const before = event.data?.before?.data();
     const after = event.data?.after?.data();
-
     if (!before || !after) return;
 
-    const justApproved = before.approved === false && after.approved === true;
+    // Soporta ambas variantes: approved / aproved
+    const beforeApproval = before.approved ?? before.aproved;
+    const afterApproval = after.approved ?? after.aproved;
+
+    // Cambió de falso a verdadero → recién aprobado
+    const justApproved = beforeApproval === false && afterApproval === true;
     if (!justApproved) return;
 
-    const { userId, tipoPermiso, fechaInicio, fechaFin } = after;
-
-    if (!userId || !tipoPermiso || !fechaInicio || !fechaFin) {
-      console.error("Datos incompletos en la solicitud:", after);
+    // Evitar ejecución múltiple
+    if (after.processed === true) {
+      console.log("Solicitud ya procesada, no volver a ejecutar.");
       return;
     }
 
+    const { userId, tipoPermiso, fechaInicio, fechaFin } = after;
+    if (!userId || !tipoPermiso || !fechaInicio || !fechaFin) {
+      console.error("Datos faltantes en la solicitud:", after);
+      return;
+    }
+
+    // Cálculo de días solicitados (incluye ambos extremos)
     const diasSolicitados =
       Math.ceil(
         Math.abs(fechaFin.toDate().getTime() - fechaInicio.toDate().getTime()) /
@@ -31,33 +41,44 @@ export const onRequestApproved = onDocumentUpdated(
 
     const userRef = db.collection("users").doc(userId);
     const userSnap = await userRef.get();
-
     if (!userSnap.exists) {
       console.error("Usuario no encontrado:", userId);
       return;
     }
 
     const userData = userSnap.data() || {};
-    const updates: Record<string, any> = {};
+    const updateFields: Record<string, number> = {};
 
-    if (tipoPermiso === "Vacaciones") {
-      const used = userData.vacationUsedInDays || 0;
-      updates.vacationUsedInDays = used + diasSolicitados;
-    } else if (tipoPermiso === "Administrativo") {
-      const remaining = userData.administrativeDays || 0;
-      updates.administrativeDays = Math.max(remaining - diasSolicitados, 0);
-    } else {
-      console.log("Tipo de permiso no requiere descuento:", tipoPermiso);
-      return;
+    switch (tipoPermiso) {
+      case "Vacaciones": {
+        const used = userData.vacationUsedInDays || 0;
+        updateFields.vacationUsedInDays = used + diasSolicitados;
+        break;
+      }
+
+      case "Administrativo": {
+        const remaining = userData.administrativeDays ?? 0;
+        const newRemaining = Math.max(remaining - diasSolicitados, 0);
+        updateFields.administrativeDays = newRemaining;
+        break;
+      }
+
+      default:
+        console.log("Tipo de permiso sin impacto en saldo:", tipoPermiso);
+        break;
     }
 
-    await userRef.update(updates);
+    if (Object.keys(updateFields).length > 0) {
+      await userRef.update(updateFields);
+      console.log(`Saldo actualizado para usuario ${userId}:`, updateFields);
+    }
 
-    console.log(`Días actualizados para usuario ${userId}:`, updates);
-
+    // Marcar solicitud procesada
     await event.data?.after?.ref.update({
       processed: true,
       processedAt: FieldValue.serverTimestamp(),
     });
+
+    console.log("Solicitud procesada correctamente ✔️");
   }
 );

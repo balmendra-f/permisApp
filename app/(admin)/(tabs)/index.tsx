@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -24,7 +24,6 @@ interface Solicitud {
   motivo: string;
   fechaInicio: any;
   fechaFin: any;
-  isPending?: boolean;
   aproved: boolean | null;
   createdAt: any;
   documento: any;
@@ -32,23 +31,13 @@ interface Solicitud {
 }
 
 export default function PanelAdmin() {
-  const { requests, loading, fetchBySection } = useRequests();
+  const { requests, loading } = useRequests();
   const { user } = useAuth();
   const section = user?.section;
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    if (!section) return;
-    const unsubscribe = fetchBySection(section);
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [section]);
-
-  // Solicitudes pendientes: aproved === null
   const solicitudesPendientes = requests.filter(
-    (req: Solicitud) =>
-      req.aproved === null && req.section && section && req.section === section
+    (req: Solicitud) => req.aproved === null && req.section === section
   );
 
   const formatDate = (dateObj: any) => {
@@ -88,16 +77,12 @@ export default function PanelAdmin() {
     try {
       setProcessingIds((prev) => new Set(prev).add(id));
       await updateRequestById(id, { aproved: true, isPending: false });
-      Alert.alert("Solicitud Aprobada", "La solicitud ha sido aprobada exitosamente", [
-        { text: "OK" },
-      ]);
-    } catch (error) {
-      console.error("Error al aprobar solicitud:", error);
       Alert.alert(
-        "Error",
-        "Hubo un problema al aprobar la solicitud. Intenta nuevamente.",
-        [{ text: "OK" }]
+        "Solicitud Aprobada",
+        "La solicitud ha sido aprobada exitosamente"
       );
+    } catch {
+      Alert.alert("Error", "Hubo un problema al aprobar la solicitud.");
     } finally {
       setProcessingIds((prev) => {
         const newSet = new Set(prev);
@@ -110,7 +95,7 @@ export default function PanelAdmin() {
   const handleRechazar = async (id: string) => {
     Alert.alert(
       "Rechazar Solicitud",
-      "¿Estás seguro de que deseas rechazar esta solicitud?",
+      "¿Estás seguro de rechazar esta solicitud?",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -120,15 +105,14 @@ export default function PanelAdmin() {
             try {
               setProcessingIds((prev) => new Set(prev).add(id));
               await updateRequestById(id, { aproved: false, isPending: false });
-              Alert.alert("Solicitud Rechazada", "La solicitud ha sido rechazada", [
-                { text: "OK" },
-              ]);
-            } catch (error) {
-              console.error("Error al rechazar solicitud:", error);
+              Alert.alert(
+                "Solicitud Rechazada",
+                "La solicitud ha sido rechazada"
+              );
+            } catch {
               Alert.alert(
                 "Error",
-                "Hubo un problema al rechazar la solicitud. Intenta nuevamente.",
-                [{ text: "OK" }]
+                "Hubo un problema al rechazar la solicitud."
               );
             } finally {
               setProcessingIds((prev) => {
@@ -143,24 +127,26 @@ export default function PanelAdmin() {
     );
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-black">
-        <View className="flex-1 justify-center items-center gap-4">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="text-gray-400 text-base">Cargando solicitudes...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   if (!section) {
     return (
       <SafeAreaView className="flex-1 bg-black">
         <View className="flex-1 justify-center items-center gap-4">
           <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
           <Text className="text-gray-400 text-base">
-            No se ha asignado una sección a tu usuario
+            Tu usuario no tiene una sección asignada
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-black">
+        <View className="flex-1 justify-center items-center gap-4">
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text className="text-gray-400 text-base">
+            Cargando solicitudes...
           </Text>
         </View>
       </SafeAreaView>
@@ -171,13 +157,16 @@ export default function PanelAdmin() {
     <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <ScrollView className="flex-1">
+        {/* Encabezado */}
         <View className="flex-row justify-between items-center p-5 bg-gray-800">
           <View className="flex-row items-center gap-3">
             <View className="w-15 h-15 rounded-lg bg-blue-600 justify-center items-center">
               <Ionicons name="shield-outline" size={32} color="#FFF" />
             </View>
             <View>
-              <Text className="text-white text-2xl font-bold">Panel Administrador</Text>
+              <Text className="text-white text-2xl font-bold">
+                Panel Administrador
+              </Text>
               <Text className="text-gray-400 text-base mt-1">{user?.name}</Text>
             </View>
           </View>
@@ -186,13 +175,17 @@ export default function PanelAdmin() {
           </TouchableOpacity>
         </View>
 
+        {/* Indicador de número de solicitudes */}
         <View className="bg-gray-800 m-5 p-6 rounded-2xl shadow-md">
-          <Text className="text-white text-base mb-3">Solicitudes Pendientes</Text>
+          <Text className="text-white text-base mb-3">
+            Solicitudes Pendientes
+          </Text>
           <Text className="text-blue-500 text-5xl font-bold">
             {solicitudesPendientes.length}
           </Text>
         </View>
 
+        {/* Lista */}
         <View className="px-5 pt-0">
           <Text className="text-white text-2xl font-bold mb-1">
             Solicitudes por Aprobar
@@ -203,7 +196,11 @@ export default function PanelAdmin() {
 
           {solicitudesPendientes.length === 0 ? (
             <View className="items-center justify-center py-10">
-              <Ionicons name="checkmark-circle-outline" size={48} color="#9CA3AF" />
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={48}
+                color="#9CA3AF"
+              />
               <Text className="text-gray-400 text-base mt-3">
                 No hay solicitudes pendientes
               </Text>
@@ -231,12 +228,19 @@ export default function PanelAdmin() {
                     </Text>
                   </View>
 
-                  <Text className="text-gray-400 text-base mb-3">{solicitud.motivo}</Text>
+                  <Text className="text-gray-400 text-base mb-3">
+                    {solicitud.motivo}
+                  </Text>
 
                   <View className="flex-row items-center gap-2 mb-5">
-                    <Ionicons name="calendar-outline" size={18} color="#757575" />
+                    <Ionicons
+                      name="calendar-outline"
+                      size={18}
+                      color="#757575"
+                    />
                     <Text className="text-gray-400 text-sm">
-                      {formatDate(solicitud.fechaInicio)} - {formatDate(solicitud.fechaFin)}
+                      {formatDate(solicitud.fechaInicio)} —{" "}
+                      {formatDate(solicitud.fechaFin)}
                     </Text>
                   </View>
 
@@ -252,8 +256,14 @@ export default function PanelAdmin() {
                         <ActivityIndicator size="small" color="#D32F2F" />
                       ) : (
                         <>
-                          <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
-                          <Text className="text-red-500 text-base font-semibold">Rechazar</Text>
+                          <Ionicons
+                            name="close-circle-outline"
+                            size={20}
+                            color="#EF4444"
+                          />
+                          <Text className="text-red-500 text-base font-semibold">
+                            Rechazar
+                          </Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -269,8 +279,14 @@ export default function PanelAdmin() {
                         <ActivityIndicator size="small" color="#FFF" />
                       ) : (
                         <>
-                          <Ionicons name="checkmark-circle-outline" size={20} color="#FFF" />
-                          <Text className="text-white text-base font-semibold">Aprobar</Text>
+                          <Ionicons
+                            name="checkmark-circle-outline"
+                            size={20}
+                            color="#FFF"
+                          />
+                          <Text className="text-white text-base font-semibold">
+                            Aprobar
+                          </Text>
                         </>
                       )}
                     </TouchableOpacity>

@@ -1,83 +1,40 @@
 import "../global.css";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { useRouter, useSegments } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import ScreenProvider from "../providers/ScreenProvider";
 import AuthProvider, { useAuth } from "@/providers/AuthProvider";
 import { RequestsProvider } from "@/providers/RequestProvider";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Stack } from "expo-router";
 
 const AppLayout = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
-  const segments = useSegments();
+  const segments = useSegments() as string[];
   const router = useRouter();
-  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
-    // No hacer nada mientras está cargando o navegando
-    if (isLoading || isNavigating) {
-      return;
-    }
+    if (isLoading || segments.length === 0) return;
 
-    // Esperar a que segments esté listo
-    if (segments.length === 0) {
-      return;
-    }
+    const currentGroup = segments[0];
 
-    const inAuthGroup = segments[0] === "(auth)";
-    const inMasterGroup = segments[0] === "(master)";
-    const inAdminGroup = segments[0] === "(admin)";
-    const inAppGroup = segments[0] === "(app)";
-
-    // Usuario NO autenticado
     if (!isAuthenticated) {
-      if (!inAuthGroup) {
-        console.log("🚫 No autenticado → /auth");
-        setIsNavigating(true);
-        setTimeout(() => {
-          router.replace("/(auth)");
-          setIsNavigating(false);
-        }, 100);
-      }
+      if (currentGroup !== "(auth)") router.replace("/(auth)");
       return;
     }
 
-    // Usuario autenticado - verificar si está en la ruta correcta
-    const shouldBeInMaster = user?.isMaster === true;
-    const shouldBeInAdmin = !user?.isMaster && user?.isAdmin === true;
-    const shouldBeInApp = !user?.isMaster && !user?.isAdmin;
+    const destination = user?.isMaster
+      ? "/(master)"
+      : user?.isAdmin
+      ? "/(admin)"
+      : "/(app)/(tabs)";
 
-    // Verificar si ya está en la ruta correcta
-    if (shouldBeInMaster && inMasterGroup) return;
-    if (shouldBeInAdmin && inAdminGroup) return;
-    if (shouldBeInApp && inAppGroup) return;
+    if (!destination.startsWith(`/${currentGroup}`)) {
+      router.replace(destination);
+    }
+  }, [isAuthenticated, isLoading, user?.isMaster, user?.isAdmin, segments]);
 
-    // Redirigir a la ruta correcta
-    console.log("🔁 Redirigiendo según rol de usuario");
-    setIsNavigating(true);
-
-    setTimeout(() => {
-      if (shouldBeInMaster) {
-        router.replace("/(master)");
-      } else if (shouldBeInAdmin) {
-        router.replace("/(admin)");
-      } else {
-        router.replace("/(app)/(tabs)");
-      }
-      setIsNavigating(false);
-    }, 100);
-  }, [
-    isAuthenticated,
-    isLoading,
-    user?.isMaster,
-    user?.isAdmin,
-    segments,
-    isNavigating,
-  ]);
-
-  // Mostrar loading mientras carga o navega
-  if (isLoading || isNavigating) {
+  if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
