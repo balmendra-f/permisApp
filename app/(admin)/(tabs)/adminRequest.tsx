@@ -1,19 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
-import { useRequests } from "@/providers/RequestProvider";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebase";
+
+const getRequestsByUser = (userId: string, callback: (data: any[]) => void) => {
+  const q = query(collection(db, "solicitudes"), where("userId", "==", userId));
+  return onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    callback(data);
+  });
+};
 
 const PermissionsScreen = () => {
   const { user } = useAuth();
   const username = user?.name;
-  const { requests } = useRequests();
+  const [requests, setRequests] = useState<any[]>([]);
 
-  const pendientes = requests.filter((r: any) => r.aproved === null).length;
-  const aprobados = requests.filter((r: any) => r.aproved === true).length;
-  const denegados = requests.filter((r: any) => r.aproved === false).length;
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const unsubscribe = getRequestsByUser(user.id, setRequests);
+
+    return () => unsubscribe();
+  }, [user?.id]);
+
+  const pendientes = requests.filter((r) => r.aproved === null).length;
+  const aprobados = requests.filter((r) => r.aproved === true).length;
+  const denegados = requests.filter((r) => r.aproved === false).length;
 
   const StatCard = ({
     count,
@@ -56,14 +73,7 @@ const PermissionsScreen = () => {
       month: "short",
     })}`;
 
-    // Estado según aproved
-    let estadoConfig = {
-      text: "",
-      bgColor: "",
-      textColor: "",
-      icon: "",
-    };
-
+    let estadoConfig = { text: "", bgColor: "", textColor: "", icon: "" };
     if (item.aproved === null) {
       estadoConfig = {
         text: "Pendiente",
@@ -137,7 +147,6 @@ const PermissionsScreen = () => {
           </View>
         </View>
 
-        {/* Conteo de permisos - Mejorado */}
         <View className="flex-row justify-between mb-6">
           <StatCard
             count={pendientes}
@@ -159,7 +168,6 @@ const PermissionsScreen = () => {
           />
         </View>
 
-        {/* Botón nueva solicitud - Mejorado */}
         <TouchableOpacity
           className="bg-blue-600 p-5 rounded-2xl flex-row justify-center items-center mb-8 shadow-lg shadow-blue-600/30 active:bg-blue-700"
           onPress={() => router.push("/request/page")}
@@ -172,7 +180,6 @@ const PermissionsScreen = () => {
           </Text>
         </TouchableOpacity>
 
-        {/* Historial de solicitudes */}
         <View className="mb-4">
           <Text className="text-xl font-bold text-white mb-1">
             Mis Solicitudes

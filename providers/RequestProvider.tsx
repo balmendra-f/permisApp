@@ -4,13 +4,29 @@ import { getRequestsBySection } from "@/api/request/getRequestBySection";
 import { getRequestsByUser } from "@/api/request/getRequestByUser";
 import { useAuth } from "@/providers/AuthProvider";
 
-const RequestsContext = createContext({
+interface RequestsContextType {
+  requests: any[];
+  loading: boolean;
+  onlyUserRequests: boolean; // NUEVO: indica si solo trae requests del user
+  refetch: () => void;
+}
+
+const RequestsContext = createContext<RequestsContextType>({
   requests: [],
   loading: true,
+  onlyUserRequests: false,
   refetch: () => {},
 });
 
-export const RequestsProvider = ({ children }: any) => {
+interface RequestsProviderProps {
+  children: React.ReactNode;
+  onlyUserRequests?: boolean; // flag opcional
+}
+
+export const RequestsProvider = ({
+  children,
+  onlyUserRequests = false,
+}: RequestsProviderProps) => {
   const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,22 +37,22 @@ export const RequestsProvider = ({ children }: any) => {
     setLoading(true);
     let unsubscribe: any;
 
-    if (user.isAdmin === true) {
-      unsubscribe = getRequestsBySection(
-        user.section,
-        (data: React.SetStateAction<never[]>) => {
-          setRequests(data);
-          setLoading(false);
-        }
-      );
+    if (onlyUserRequests) {
+      // Siempre trae requests del usuario
+      unsubscribe = getRequestsByUser(user.id, (data: any) => {
+        setRequests(data);
+        setLoading(false);
+      });
+    } else if (user.isAdmin === true) {
+      unsubscribe = getRequestsBySection(user.section, (data: any) => {
+        setRequests(data);
+        setLoading(false);
+      });
     } else {
-      unsubscribe = getRequestsByUser(
-        user.id,
-        (data: React.SetStateAction<never[]>) => {
-          setRequests(data);
-          setLoading(false);
-        }
-      );
+      unsubscribe = getRequestsByUser(user.id, (data: any) => {
+        setRequests(data);
+        setLoading(false);
+      });
     }
 
     return unsubscribe;
@@ -52,6 +68,7 @@ export const RequestsProvider = ({ children }: any) => {
       value={{
         requests,
         loading,
+        onlyUserRequests, // agregamos al context
         refetch: () => subscribe(),
       }}
     >
