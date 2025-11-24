@@ -4,7 +4,6 @@ import {
   TextInput,
   Text,
   Keyboard,
-  Image,
   TouchableOpacity,
 } from "react-native";
 import { router } from "expo-router";
@@ -19,10 +18,9 @@ import { useScreen } from "@/providers/ScreenProvider";
 import Header from "@/components/common/Header";
 import Screen from "@/components/common/Screen";
 import useImageUpload from "@/hooks/useImageUpload";
-import ImagePicker from "@/components/common/ImagePicker";
 
 const SignUp = () => {
-  const { imageUrl, isUploading, setImageUrl, pickImage } = useImageUpload();
+  const { imageUrl, isUploading } = useImageUpload();
   const { setIsLoading } = useScreen();
   const { countryCode } = useCountry();
 
@@ -33,6 +31,7 @@ const SignUp = () => {
     password2: "",
     country: countryCode,
     section: "",
+    sectionBoss: "", // Nuevo campo opcional
   });
 
   useEffect(() => {
@@ -53,11 +52,18 @@ const SignUp = () => {
   };
 
   const handleSectionChange = (value: string) => {
-    // Solo permitir números
     const numericValue = value.replace(/[^0-9]/g, "");
     setFormData((prevState) => ({
       ...prevState,
       section: numericValue,
+    }));
+  };
+
+  const handleSectionBossChange = (value: string) => {
+    const numericValue = value.replace(/[^0-9]/g, "");
+    setFormData((prevState) => ({
+      ...prevState,
+      sectionBoss: numericValue,
     }));
   };
 
@@ -94,9 +100,7 @@ const SignUp = () => {
     Keyboard.dismiss();
     setError(false);
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
@@ -113,7 +117,9 @@ const SignUp = () => {
         email: formData.email,
         country: formData.country,
         section: formData.section,
+        sectionBoss: formData.sectionBoss || null, // Guardar opcional
       });
+
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
       router.replace("/");
     } catch (error: any) {
@@ -177,6 +183,19 @@ const SignUp = () => {
               placeholderTextColor="#666"
               value={formData.section}
               onChangeText={handleSectionChange}
+              keyboardType="numeric"
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* Campo opcional Sección jefatura */}
+          <View className="mt-4">
+            <TextInput
+              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
+              placeholder="Sección jefatura (opcional)"
+              placeholderTextColor="#666"
+              value={formData.sectionBoss}
+              onChangeText={handleSectionBossChange}
               keyboardType="numeric"
               autoCapitalize="none"
             />

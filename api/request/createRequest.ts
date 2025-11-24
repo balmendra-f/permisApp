@@ -7,20 +7,12 @@ export const createRequest = async (solicitud: any) => {
     const auth = getAuth(app);
     const user = auth.currentUser;
     const userId = user?.uid;
-
-    // 🔍 Debug para ver qué datos recibe la función
-    console.log("📌 solicitud recibida:", solicitud);
-    console.log("📌 userId:", userId);
-
     const dataToSave = {
       ...solicitud,
       userId,
       aproved: null,
       createdAt: serverTimestamp(),
     };
-
-    // 🔍 Debug para ver EXACTAMENTE lo que se guardará en Firestore
-    console.log("📌 datos finales que se guardan:", dataToSave);
 
     const docRef = await addDoc(collection(db, "solicitudes"), dataToSave);
 

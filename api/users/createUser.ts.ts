@@ -3,7 +3,8 @@ import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";
 const createUser = async (
   uid: string,
   userData: {
-    section: any;
+    section: string;
+    sectionBoss?: string | null; // Nuevo campo opcional
     name: string;
     email: string;
     country: string | null;
@@ -22,6 +23,7 @@ const createUser = async (
       timeReturnsInHours: 8,
       isAdmin: false,
       section: userData.section,
+      sectionBoss: userData.sectionBoss || null, // Guardar null si no se proporciona
     });
   } catch (error: any) {
     throw new Error(error.message);

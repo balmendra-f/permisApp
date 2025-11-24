@@ -7,11 +7,13 @@ import { RequestsProvider } from "@/providers/RequestProvider";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Stack } from "expo-router";
+import { LogBox } from "react-native";
 
 const AppLayout = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
   const segments = useSegments() as string[];
   const router = useRouter();
+  LogBox.ignoreAllLogs(true);
 
   useEffect(() => {
     if (isLoading || segments.length === 0) return;

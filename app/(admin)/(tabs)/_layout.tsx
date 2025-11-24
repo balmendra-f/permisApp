@@ -37,6 +37,24 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
+        name="adminRequest"
+        options={{
+          title: "Permisos",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="book-outline" size={20} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="historyRequest"
+        options={{
+          title: "Historial",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="bookmark" size={20} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="Settings"
         options={{
           title: "Configuración",
