@@ -24,9 +24,9 @@ const AppLayout = () => {
     }
 
     const destination = user?.isMaster
-      ? "/(master)"
+      ? "/(master)/(tabs)"
       : user?.isAdmin
-      ? "/(admin)"
+      ? "/(admin)/(tabs)"
       : "/(app)/(tabs)";
 
     if (!destination.startsWith(`/${currentGroup}`)) {
