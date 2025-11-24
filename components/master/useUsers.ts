@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
-import getUsers from "@/api/users/getUser";
+import { db } from "@/firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 import updateUser from "@/api/users/updateUser";
 
 interface User {
@@ -17,29 +18,31 @@ export const useUsers = () => {
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await getUsers();
+    // 🔥 Listener en tiempo real
+    const unsubscribe = onSnapshot(
+      collection(db, "users"),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as User[];
+
         setUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error al escuchar usuarios:", error);
         setLoading(false);
       }
-    };
-    fetchUsers();
+    );
+
+    return () => unsubscribe();
   }, []);
 
   const toggleAdmin = async (userId: string, currentValue?: boolean) => {
     try {
       setProcessingIds((prev) => new Set(prev).add(userId));
       await updateUser(userId, { isAdmin: !currentValue });
-
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId ? { ...u, isAdmin: !currentValue } : u
-        )
-      );
 
       Alert.alert(
         "Actualizado",
@@ -52,9 +55,9 @@ export const useUsers = () => {
       Alert.alert("Error", "No se pudo actualizar el usuario.");
     } finally {
       setProcessingIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(userId);
-        return newSet;
+        const n = new Set(prev);
+        n.delete(userId);
+        return n;
       });
     }
   };
