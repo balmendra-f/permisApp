@@ -23,6 +23,7 @@ export default function LoginScreen() {
     email: "",
     password: "",
   });
+
   const handleInputChange = (name: string, value: string) => {
     setFormData((prevState) => ({
       ...prevState,
@@ -46,9 +47,9 @@ export default function LoginScreen() {
     try {
       setIsLoading(true);
       await signInWithEmailAndPassword(auth, formData.email, password);
-      router.push("/(app)/(tabs)");
+      router.replace("/");
     } catch (error) {
-      Alert.alert("Error", "Contraseña inválida", [{ text: "OK" }], {
+      Alert.alert("Error", "Correo o contraseña inválida", [{ text: "OK" }], {
         cancelable: false,
       });
     } finally {
@@ -70,13 +71,13 @@ export default function LoginScreen() {
           Bienvenido a Permiso Salud
         </Text>
         <Text className="text-base text-gray-400 text-center mb-8">
-          Permisos rápidos, cero papel.
+          Permisos rápidos, sin papeleo.
         </Text>
 
         <View className="mb-6">
           <TextInput
             className="bg-neutral-800 rounded-xl p-4 mb-4 text-white text-base"
-            placeholder="Email"
+            placeholder="Correo electrónico"
             placeholderTextColor="#666"
             keyboardType="email-address"
             value={formData.email}
@@ -85,7 +86,7 @@ export default function LoginScreen() {
           />
           <TextInput
             className="bg-neutral-800 rounded-xl p-4 mb-2 text-white text-base"
-            placeholder="Password"
+            placeholder="Contraseña"
             placeholderTextColor="#666"
             value={formData.password}
             onChangeText={(value) => handleInputChange("password", value)}
@@ -93,7 +94,9 @@ export default function LoginScreen() {
             secureTextEntry={true}
           />
           <TouchableOpacity onPress={goToForgot} className="self-end">
-            <Text className="text-gray-400 text-sm">Forgot Password?</Text>
+            <Text className="text-gray-400 text-sm">
+              ¿Olvidaste tu contraseña?
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -101,13 +104,16 @@ export default function LoginScreen() {
           onPress={onSubmit}
           className="bg-indigo-700 rounded-xl p-4 items-center mb-4"
         >
-          <Text className="text-white text-base font-semibold">Sign In</Text>
+          <Text className="text-white text-base font-semibold">
+            Iniciar sesión
+          </Text>
         </TouchableOpacity>
+
         <View className="flex-row justify-center items-center">
-          <Text className="text-gray-400 text-sm">Don't Have An Account? </Text>
+          <Text className="text-gray-400 text-sm">¿No tienes una cuenta? </Text>
           <TouchableOpacity onPress={() => router.push("/(auth)/signUp")}>
             <Text className="text-indigo-500 text-sm font-semibold">
-              Sign Up
+              Regístrate
             </Text>
           </TouchableOpacity>
         </View>

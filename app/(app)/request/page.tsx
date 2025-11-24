@@ -47,7 +47,7 @@ export default function NuevaSolicitudForm() {
 
   const [tipoPermiso, setTipoPermiso] = useState("Vacaciones");
   const [tipoSaldo, setTipoSaldo] = useState("vacationsInDays");
-  const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
+  const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
   const [fechaFin, setFechaFin] = useState<Date | null>(null);
   const [motivo, setMotivo] = useState("");
   const [documento, setDocumento] = useState<string | null>(null);
@@ -80,7 +80,10 @@ export default function NuevaSolicitudForm() {
     }
 
     if (fechaInicio > fechaFin) {
-      Alert.alert("Error", "La fecha de inicio no puede ser mayor a la fecha de fin.");
+      Alert.alert(
+        "Error",
+        "La fecha de inicio no puede ser mayor a la fecha de fin."
+      );
       return;
     }
 
@@ -122,15 +125,19 @@ export default function NuevaSolicitudForm() {
 
       await createRequest(solicitud);
 
-      Alert.alert("Solicitud enviada", "Tu solicitud ha sido enviada con éxito.", [
-        {
-          text: "OK",
-          onPress: () => {
-            resetUpload();
-            router.back();
+      Alert.alert(
+        "Solicitud enviada",
+        "Tu solicitud ha sido enviada con éxito.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              resetUpload();
+              router.back();
+            },
           },
-        },
-      ]);
+        ]
+      );
     } catch (e) {
       console.error("Error adding document: ", e);
       Alert.alert("Error", "Hubo un error al enviar tu solicitud.");
@@ -146,17 +153,21 @@ export default function NuevaSolicitudForm() {
   };
 
   const handleRemoveFile = () => {
-    Alert.alert("Eliminar documento", "¿Deseas eliminar el documento adjunto?", [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Eliminar",
-        style: "destructive",
-        onPress: () => {
-          setDocumento(null);
-          resetUpload();
+    Alert.alert(
+      "Eliminar documento",
+      "¿Deseas eliminar el documento adjunto?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => {
+            setDocumento(null);
+            resetUpload();
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const handleSelectTipoPermiso = (tipo: string) => {
@@ -203,7 +214,8 @@ export default function NuevaSolicitudForm() {
             </Text>
             <View className="mb-6">
               <Text className="text-base text-gray-300 mb-1">
-                Vacaciones: {user.vacationsInDays - user.vacationUsedInDays} días
+                Vacaciones: {user.vacationsInDays - user.vacationUsedInDays}{" "}
+                días
               </Text>
               <Text className="text-base text-gray-300">
                 Administrativos: {user.administrativeDays} días
@@ -301,13 +313,27 @@ export default function NuevaSolicitudForm() {
                 <View className="border border-green-600 rounded-lg px-4 py-3 bg-neutral-700">
                   <View className="flex-row items-center justify-between">
                     <View className="flex-1 flex-row items-center">
-                      <Ionicons name="document-attach" size={20} color="#10B981" />
-                      <Text className="text-sm text-white ml-2 flex-1" numberOfLines={1}>
+                      <Ionicons
+                        name="document-attach"
+                        size={20}
+                        color="#10B981"
+                      />
+                      <Text
+                        className="text-sm text-white ml-2 flex-1"
+                        numberOfLines={1}
+                      >
                         {uploadedFile.fileName}
                       </Text>
                     </View>
-                    <TouchableOpacity onPress={handleRemoveFile} className="ml-2">
-                      <Ionicons name="close-circle" size={24} color="#989292ff" />
+                    <TouchableOpacity
+                      onPress={handleRemoveFile}
+                      className="ml-2"
+                    >
+                      <Ionicons
+                        name="close-circle"
+                        size={24}
+                        color="#989292ff"
+                      />
                     </TouchableOpacity>
                   </View>
                   <Text className="text-xs text-green-500 mt-1">
@@ -317,7 +343,9 @@ export default function NuevaSolicitudForm() {
               ) : uploading ? (
                 <View className="border border-blue-600 rounded-lg px-4 py-3 bg-neutral-700">
                   <View className="flex-row items-center justify-between mb-2">
-                    <Text className="text-sm text-white">Subiendo archivo...</Text>
+                    <Text className="text-sm text-white">
+                      Subiendo archivo...
+                    </Text>
                     <Text className="text-sm text-blue-400">{progress}%</Text>
                   </View>
                   <View className="h-2 bg-neutral-600 rounded-full overflow-hidden">
@@ -338,7 +366,11 @@ export default function NuevaSolicitudForm() {
                     onPress={handleFileUpload}
                     className="border border-neutral-600 rounded-lg p-3 bg-neutral-700"
                   >
-                    <Ionicons name="cloud-upload-outline" size={24} color="#9CA3AF" />
+                    <Ionicons
+                      name="cloud-upload-outline"
+                      size={24}
+                      color="#9CA3AF"
+                    />
                   </TouchableOpacity>
                 </View>
               )}
@@ -403,7 +435,11 @@ export default function NuevaSolicitudForm() {
                 {tipo}
               </Text>
               {tipoPermiso === tipo && (
-                <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={colors.primary}
+                />
               )}
             </TouchableOpacity>
           ))}
@@ -435,7 +471,11 @@ export default function NuevaSolicitudForm() {
                 {opt.label}
               </Text>
               {tipoSaldo === opt.value && (
-                <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={colors.primary}
+                />
               )}
             </TouchableOpacity>
           ))}
@@ -457,7 +497,9 @@ export default function NuevaSolicitudForm() {
               <Ionicons name="document-text" size={24} color="#60A5FA" />
               <View className="ml-3">
                 <Text style={styles.optionText}>Documento</Text>
-                <Text className="text-xs text-gray-400 mt-1">PDF, Word, etc.</Text>
+                <Text className="text-xs text-gray-400 mt-1">
+                  PDF, Word, etc.
+                </Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -471,7 +513,9 @@ export default function NuevaSolicitudForm() {
               <Ionicons name="image" size={24} color="#60A5FA" />
               <View className="ml-3">
                 <Text style={styles.optionText}>Imagen</Text>
-                <Text className="text-xs text-gray-400 mt-1">JPG, PNG, etc.</Text>
+                <Text className="text-xs text-gray-400 mt-1">
+                  JPG, PNG, etc.
+                </Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />

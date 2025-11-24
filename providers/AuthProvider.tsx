@@ -18,11 +18,9 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      console.log("👀 onAuthStateChanged:", currentUser?.uid);
       setIsLoading(true);
 
       if (!currentUser) {
-        console.log("🚫 No hay usuario logueado");
         setUser(null);
         setIsAuthenticated(false);
         setIsLoading(false);
@@ -31,7 +29,6 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
       try {
         const fetchedUser = await getUserById(currentUser.uid);
-        console.log("🧠 Usuario obtenido:", fetchedUser);
 
         if (!fetchedUser) {
           console.warn(

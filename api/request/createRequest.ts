@@ -7,18 +7,22 @@ export const createRequest = async (solicitud: any) => {
     const auth = getAuth(app);
     const user = auth.currentUser;
     const userId = user?.uid;
-    const docRef = await addDoc(collection(db, "solicitudes"), {
-      tipoPermiso: solicitud.tipoPermiso,
-      fechaInicio: solicitud.fechaInicio,
-      fechaFin: solicitud.fechaFin,
-      motivo: solicitud.motivo,
-      documento: solicitud.documento,
+
+    // 🔍 Debug para ver qué datos recibe la función
+    console.log("📌 solicitud recibida:", solicitud);
+    console.log("📌 userId:", userId);
+
+    const dataToSave = {
+      ...solicitud,
+      userId,
       aproved: null,
       createdAt: serverTimestamp(),
-      username: solicitud.username,
-      section: solicitud.section,
-      userId,
-    });
+    };
+
+    // 🔍 Debug para ver EXACTAMENTE lo que se guardará en Firestore
+    console.log("📌 datos finales que se guardan:", dataToSave);
+
+    const docRef = await addDoc(collection(db, "solicitudes"), dataToSave);
 
     return docRef.id;
   } catch (error) {

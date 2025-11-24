@@ -6,18 +6,21 @@ initializeApp();
 const db = getDB();
 
 export const onRequestApproved = onDocumentUpdated(
-  "requests/{requestId}",
+  "solicitudes/{requestId}",
   async (event) => {
     const before = event.data?.before?.data();
     const after = event.data?.after?.data();
     if (!before || !after) return;
 
-    // Soporta ambas variantes: approved / aproved
-    const beforeApproval = before.approved ?? before.aproved;
-    const afterApproval = after.approved ?? after.aproved;
+    // 🔍 Verificar el campo correcto: "aproved" (como está en tu BD)
+    const beforeApproval = before.aproved;
+    const afterApproval = after.aproved;
 
-    // Cambió de falso a verdadero → recién aprobado
-    const justApproved = beforeApproval === false && afterApproval === true;
+    // Solo ejecutar cuando cambia de NO aprobado/null a true
+    const justApproved =
+      (beforeApproval === false || beforeApproval === null) &&
+      afterApproval === true;
+
     if (!justApproved) return;
 
     // Evitar ejecución múltiple
@@ -26,21 +29,16 @@ export const onRequestApproved = onDocumentUpdated(
       return;
     }
 
-    const { userId, tipoPermiso, fechaInicio, fechaFin } = after;
-    if (!userId || !tipoPermiso || !fechaInicio || !fechaFin) {
+    const { userId, tipoPermiso, diasSolicitados } = after;
+
+    if (!userId || !tipoPermiso || !diasSolicitados) {
       console.error("Datos faltantes en la solicitud:", after);
       return;
     }
 
-    // Cálculo de días solicitados (incluye ambos extremos)
-    const diasSolicitados =
-      Math.ceil(
-        Math.abs(fechaFin.toDate().getTime() - fechaInicio.toDate().getTime()) /
-          (1000 * 60 * 60 * 24)
-      ) + 1;
-
     const userRef = db.collection("users").doc(userId);
     const userSnap = await userRef.get();
+
     if (!userSnap.exists) {
       console.error("Usuario no encontrado:", userId);
       return;
@@ -49,6 +47,7 @@ export const onRequestApproved = onDocumentUpdated(
     const userData = userSnap.data() || {};
     const updateFields: Record<string, number> = {};
 
+    // 📋 Mapeo de tipos de permiso según tu lógica
     switch (tipoPermiso) {
       case "Vacaciones": {
         const used = userData.vacationUsedInDays || 0;
@@ -56,7 +55,9 @@ export const onRequestApproved = onDocumentUpdated(
         break;
       }
 
+      case "Permiso Médico":
       case "Administrativo": {
+        // ✅ Descontar de administrativeDays
         const remaining = userData.administrativeDays ?? 0;
         const newRemaining = Math.max(remaining - diasSolicitados, 0);
         updateFields.administrativeDays = newRemaining;
@@ -68,16 +69,20 @@ export const onRequestApproved = onDocumentUpdated(
         break;
     }
 
+    // 💾 Actualizar saldo del usuario
     if (Object.keys(updateFields).length > 0) {
       await userRef.update(updateFields);
       console.log(`Saldo actualizado para usuario ${userId}:`, updateFields);
     }
 
-    // Marcar solicitud procesada
-    await event.data?.after?.ref.update({
-      processed: true,
-      processedAt: FieldValue.serverTimestamp(),
-    });
+    // ✅ Marcar solicitud como procesada
+    await event.data?.after?.ref.set(
+      {
+        processed: true,
+        processedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
 
     console.log("Solicitud procesada correctamente ✔️");
   }

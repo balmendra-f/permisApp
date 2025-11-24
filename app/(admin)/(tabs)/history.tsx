@@ -32,7 +32,6 @@ type FilterType = "todas" | "aprobadas" | "rechazadas";
 
 export default function HistorialSolicitudes() {
   const { requests, loading } = useRequests();
-  console.log(requests);
   const [filtroActivo, setFiltroActivo] = useState<FilterType>("todas");
 
   const solicitudesProcesadas = requests.filter(

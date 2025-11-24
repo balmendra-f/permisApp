@@ -115,7 +115,7 @@ const SignUp = () => {
         section: formData.section,
       });
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      router.push("/(app)/(tabs)");
+      router.replace("/");
     } catch (error: any) {
       setError(true);
       setErrorMessage(
@@ -137,20 +137,20 @@ const SignUp = () => {
 
   return (
     <Screen>
-      <Header title="Create Account" />
+      <Header title="Crear cuenta" />
       <View className="flex-1 p-6">
         <Text className="text-3xl font-bold text-white text-center mb-2">
-          Create Account
+          Crear cuenta
         </Text>
         <Text className="text-base text-gray-400 text-center mb-8">
-          Please fill in your details
+          Completa tus datos
         </Text>
 
         <View className="space-y-4">
           <View className="mt-4">
             <TextInput
               className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Email"
+              placeholder="Correo electrónico"
               placeholderTextColor="#666"
               value={formData.email}
               onChangeText={(value) => handleInputChange("email", value)}
@@ -162,7 +162,7 @@ const SignUp = () => {
           <View className="mt-4">
             <TextInput
               className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Full Name"
+              placeholder="Nombre completo"
               placeholderTextColor="#666"
               value={formData.name}
               onChangeText={(value) => handleInputChange("name", value)}
@@ -173,7 +173,7 @@ const SignUp = () => {
           <View className="mt-4">
             <TextInput
               className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Sección (Solo numeros)"
+              placeholder="Sección (Solo números)"
               placeholderTextColor="#666"
               value={formData.section}
               onChangeText={handleSectionChange}
@@ -185,7 +185,7 @@ const SignUp = () => {
           <View className="mt-4">
             <TextInput
               className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Password"
+              placeholder="Contraseña"
               placeholderTextColor="#666"
               value={formData.password}
               onChangeText={(value) => handleInputChange("password", value)}
@@ -197,7 +197,7 @@ const SignUp = () => {
           <View className="mt-4">
             <TextInput
               className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Confirm Password"
+              placeholder="Confirmar contraseña"
               placeholderTextColor="#666"
               value={formData.password2}
               onChangeText={(value) => handleInputChange("password2", value)}
@@ -221,17 +221,15 @@ const SignUp = () => {
           }`}
         >
           <Text className="text-white text-base font-semibold">
-            {isUploading ? "Uploading Image..." : "Create Account"}
+            {isUploading ? "Subiendo imagen..." : "Crear cuenta"}
           </Text>
         </TouchableOpacity>
 
         <View className="flex-row justify-center items-center">
-          <Text className="text-gray-400 text-sm">
-            Already have an account?{" "}
-          </Text>
+          <Text className="text-gray-400 text-sm">¿Ya tienes una cuenta? </Text>
           <TouchableOpacity onPress={() => router.push("/(auth)")}>
             <Text className="text-indigo-500 text-sm font-semibold">
-              Sign In
+              Iniciar sesión
             </Text>
           </TouchableOpacity>
         </View>
