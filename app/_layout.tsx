@@ -5,14 +5,18 @@ import ScreenProvider from "../providers/ScreenProvider";
 import AuthProvider, { useAuth } from "@/providers/AuthProvider";
 import { RequestsProvider } from "@/providers/RequestProvider";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, StatusBar } from "react-native";
 import { Stack } from "expo-router";
 import { LogBox } from "react-native";
+import { useThemeConfig } from "@/hooks/useThemeConfig";
+import { useColorScheme } from "nativewind";
 
 const AppLayout = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
   const segments = useSegments() as string[];
   const router = useRouter();
+  const { colorScheme } = useColorScheme();
+
   LogBox.ignoreAllLogs(true);
 
   useEffect(() => {
@@ -38,32 +42,52 @@ const AppLayout = () => {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
+      <View className="flex-1 justify-center items-center bg-background">
+        <ActivityIndicator size="large" className="text-primary" />
       </View>
     );
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(app)" />
-      <Stack.Screen name="(admin)" />
-      <Stack.Screen name="(master)" />
-    </Stack>
+    <>
+      <StatusBar
+        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colorScheme === 'dark' ? '#020617' : '#f8fafc'}
+      />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: 'transparent' },
+          animation: "fade",
+        }}
+      >
+        <Stack.Screen name="(auth)" options={{ animation: "fade" }} />
+        <Stack.Screen name="(app)" options={{ animation: "fade" }} />
+        <Stack.Screen name="(admin)" options={{ animation: "fade" }} />
+        <Stack.Screen name="(master)" options={{ animation: "fade" }} />
+      </Stack>
+    </>
   );
 };
 
-const RootLayout = () => (
-  <SafeAreaProvider>
-    <AuthProvider>
-      <ScreenProvider>
-        <RequestsProvider>
-          <AppLayout />
-        </RequestsProvider>
-      </ScreenProvider>
-    </AuthProvider>
-  </SafeAreaProvider>
-);
+const RootLayout = () => {
+  const { isLoaded } = useThemeConfig();
+
+  if (!isLoaded) return null;
+
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <ScreenProvider>
+          <RequestsProvider>
+            <View className="flex-1 bg-background">
+              <AppLayout />
+            </View>
+          </RequestsProvider>
+        </ScreenProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
+  );
+};
 
 export default RootLayout;

@@ -12,101 +12,101 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { useUsers } from "@/components/master/useUsers";
+import { useRouter } from "expo-router";
+import Button from "@/components/common/Button";
+
+// NOTE: This file seems to be a duplicate/legacy version of the Master Panel logic
+// but located in `app/(app)/index.tsx`. The real Master Panel is likely at `app/(master)/index.tsx`.
+// However, since it exists here and was flagged, I will refactor it to use semantic colors.
 
 export default function PanelMaster() {
   const { user } = useAuth();
   const { users, loading, processingIds, toggleAdmin } = useUsers();
+  const router = useRouter();
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-background">
         <View className="flex-1 justify-center items-center gap-4">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="text-gray-400 text-base">Cargando usuarios...</Text>
+          <ActivityIndicator size="large" className="text-primary" />
+          <Text className="text-muted-foreground text-base">Cargando usuarios...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+    <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="flex-1">
         {/* Header */}
-        <View className="flex-row justify-between items-center p-5 bg-gray-800">
+        <View className="flex-row justify-between items-center p-6 bg-card border-b border-border">
           <View className="flex-row items-center gap-3">
-            <View className="w-15 h-15 rounded-lg bg-blue-600 justify-center items-center">
-              <Ionicons name="people-outline" size={32} color="#FFF" />
+            <View className="w-12 h-12 rounded-full bg-primary/10 justify-center items-center">
+              <Ionicons name="people" size={24} className="text-primary" />
             </View>
             <View>
-              <Text className="text-white text-2xl font-bold">
+              <Text className="text-foreground text-2xl font-bold">
                 Panel Master
               </Text>
-              <Text className="text-gray-400 text-base mt-1">{user?.name}</Text>
+              <Text className="text-muted-foreground text-sm">{user?.name}</Text>
             </View>
           </View>
-          <Pressable>
-            <MaterialIcons name="logout" size={24} color="#9CA3AF" />
+          <Pressable className="p-2 rounded-full border border-border bg-card">
+            <MaterialIcons name="logout" size={20} className="text-muted-foreground" />
           </Pressable>
         </View>
 
         {/* Contador */}
-        <View className="bg-gray-800 m-5 p-6 rounded-2xl shadow-md">
-          <Text className="text-white text-base mb-3">Usuarios Totales</Text>
-          <Text className="text-blue-500 text-5xl font-bold">
+        <View className="mx-6 mt-6 bg-card p-6 rounded-2xl shadow-sm border border-border">
+          <Text className="text-muted-foreground text-sm font-medium mb-1 uppercase tracking-wide">Usuarios Totales</Text>
+          <Text className="text-primary text-4xl font-extrabold">
             {users.length}
           </Text>
         </View>
 
         {/* Lista de usuarios */}
-        <View className="px-5">
-          <Text className="text-white text-2xl font-bold mb-1">
-            Lista de Usuarios
-          </Text>
-          <Text className="text-gray-400 text-sm mb-5">
-            Dar o quitar permisos de administrador
-          </Text>
+        <View className="px-6 py-6">
+          <View className="mb-4">
+            <Text className="text-foreground text-xl font-bold mb-1">
+              Lista de Usuarios
+            </Text>
+            <Text className="text-muted-foreground text-sm">
+              Gestiona los permisos y roles
+            </Text>
+          </View>
 
           {users.map((u) => {
             const isProcessing = processingIds.has(u.id);
             return (
               <View
                 key={u.id}
-                className="bg-gray-800 p-5 rounded-2xl mb-4 shadow-md"
+                className="bg-card p-5 rounded-2xl mb-4 shadow-sm border border-border"
               >
-                <Text className="text-white text-lg font-bold mb-1">
-                  {u.name || "Sin nombre"}
-                </Text>
-                <Text className="text-gray-400 text-sm mb-3">
-                  {u.email || "Sin correo"}
-                </Text>
-
-                <Pressable
-                  className={`flex-row items-center justify-center gap-2 py-3 rounded border-2 border-yellow-700 bg-gray-900 ${
-                    isProcessing ? "opacity-60" : ""
-                  } active:bg-gray-800`}
-                  onPress={() => toggleAdmin(u.id, u.isAdmin)}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <ActivityIndicator size="small" color="#FBBF24" />
-                  ) : (
-                    <>
-                      <Ionicons
-                        name="shield-outline"
-                        size={20}
-                        color={u.isAdmin ? "#FBBF24" : "#9CA3AF"}
-                      />
-                      <Text
-                        className={`text-base font-semibold ${
-                          u.isAdmin ? "text-yellow-400" : "text-gray-400"
-                        }`}
-                      >
-                        {u.isAdmin ? "Quitar Admin" : "Hacer Admin"}
+                <View className="flex-row justify-between items-start mb-2">
+                   <View>
+                      <Text className="text-foreground text-lg font-bold">
+                        {u.name || "Sin nombre"}
                       </Text>
-                    </>
-                  )}
-                </Pressable>
+                      <Text className="text-muted-foreground text-sm">
+                        {u.email || "Sin correo"}
+                      </Text>
+                   </View>
+                   {u.isAdmin && (
+                      <View className="bg-yellow-500/20 px-2 py-1 rounded">
+                         <Text className="text-yellow-600 text-[10px] font-bold uppercase">Admin</Text>
+                      </View>
+                   )}
+                </View>
+
+                <Button
+                    label={u.isAdmin ? "Quitar Admin" : "Hacer Admin"}
+                    onPress={() => toggleAdmin(u.id, u.isAdmin)}
+                    loading={isProcessing}
+                    variant={u.isAdmin ? "outline" : "primary"}
+                    className={`mt-2 ${u.isAdmin ? "border-yellow-500/50 bg-yellow-500/5" : ""}`}
+                    textClassName={u.isAdmin ? "text-yellow-600" : ""}
+                    size="sm"
+                />
               </View>
             );
           })}
