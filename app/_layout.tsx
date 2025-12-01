@@ -5,9 +5,10 @@ import ScreenProvider from "../providers/ScreenProvider";
 import AuthProvider, { useAuth } from "@/providers/AuthProvider";
 import { RequestsProvider } from "@/providers/RequestProvider";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, StatusBar } from "react-native";
 import { Stack } from "expo-router";
 import { LogBox } from "react-native";
+import { Colors } from "@/constants/Colors";
 
 const AppLayout = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
@@ -38,19 +39,28 @@ const AppLayout = () => {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: Colors.light.background }}>
+        <ActivityIndicator size="large" color={Colors.light.tint} />
       </View>
     );
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(app)" />
-      <Stack.Screen name="(admin)" />
-      <Stack.Screen name="(master)" />
-    </Stack>
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.light.background} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: Colors.light.background },
+          animation: "fade",
+        }}
+      >
+        <Stack.Screen name="(auth)" options={{ animation: "fade" }} />
+        <Stack.Screen name="(app)" options={{ animation: "fade" }} />
+        <Stack.Screen name="(admin)" options={{ animation: "fade" }} />
+        <Stack.Screen name="(master)" options={{ animation: "fade" }} />
+      </Stack>
+    </>
   );
 };
 

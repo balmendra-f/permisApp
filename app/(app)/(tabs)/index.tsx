@@ -18,6 +18,7 @@ import { cancelRequest } from "@/api/request/cancelRequest";
 import CustomModal from "@/components/common/Modal";
 import { getDocs, query, collection, where } from "firebase/firestore";
 import { db } from "@/firebase";
+import { Colors } from "@/constants/Colors";
 
 const PermissionsScreen = () => {
   const { user } = useAuth();
@@ -58,13 +59,6 @@ const PermissionsScreen = () => {
 
       try {
           if (user?.sectionBoss) {
-              // Fetch by ID if stored
-             // We can assume user.sectionBoss might be the name or ID.
-             // If it's a string name, we display it.
-             // If it's an ID, we should fetch it. Let's assume it's a Name for now based on typical small app usage, or try to fetch if it looks like an ID.
-             // Actually, the requirement says "Visualize the section chiefs".
-             // If sectionBoss is stored in user, let's use it.
-             // But if we need to find who is admin of my section:
              const q = query(
                  collection(db, "users"),
                  where("section", "==", user.section),
@@ -75,7 +69,6 @@ const PermissionsScreen = () => {
                  setChief(querySnapshot.docs[0].data());
              }
           } else {
-             // Fallback: search for admin in section
              if (user?.section) {
                  const q = query(
                      collection(db, "users"),
@@ -109,16 +102,20 @@ const PermissionsScreen = () => {
     icon: string;
   }) => (
     <View
-      className={`p-6 rounded-2xl ${color} w-[30%] shadow-lg shadow-black/50`}
+      className={`p-4 rounded-xl bg-white w-[30%] shadow-sm shadow-slate-200 border border-slate-100`}
     >
       <View className="items-center">
-        <View className="bg-white/20 p-2 rounded-full mb-2">
-          <Ionicons name={icon as any} size={20} color="white" />
+        <View className={`p-2 rounded-full mb-2 ${color} bg-opacity-10`}>
+          <Ionicons name={icon as any} size={20} color={
+              color.includes("emerald") ? "#10b981" :
+              color.includes("red") ? "#ef4444" :
+              "#f59e0b"
+          } />
         </View>
-        <Text className="text-white font-semibold text-sm text-center">
+        <Text className="text-slate-500 font-medium text-xs text-center">
           {label}
         </Text>
-        <Text className="text-white text-3xl font-bold mt-1">{count}</Text>
+        <Text className="text-slate-900 text-2xl font-bold mt-1">{count}</Text>
       </View>
     </View>
   );
@@ -138,7 +135,6 @@ const PermissionsScreen = () => {
       month: "short",
     })}`;
 
-    // Estado según aproved
     let estadoConfig = {
       text: "",
       bgColor: "",
@@ -149,61 +145,65 @@ const PermissionsScreen = () => {
     if (item.aproved === null) {
       estadoConfig = {
         text: "Pendiente",
-        bgColor: "bg-amber-500/20",
-        textColor: "text-amber-400",
+        bgColor: "bg-amber-50",
+        textColor: "text-amber-600",
         icon: "time-outline",
       };
     } else if (item.aproved === false) {
       estadoConfig = {
         text: "Denegado",
-        bgColor: "bg-red-500/20",
-        textColor: "text-red-400",
+        bgColor: "bg-red-50",
+        textColor: "text-red-600",
         icon: "close-circle-outline",
       };
     } else {
       estadoConfig = {
         text: "Aprobado",
-        bgColor: "bg-emerald-500/20",
-        textColor: "text-emerald-400",
+        bgColor: "bg-emerald-50",
+        textColor: "text-emerald-600",
         icon: "checkmark-circle-outline",
       };
     }
 
     return (
-      <View className="bg-neutral-800/80 p-5 rounded-2xl mt-3 border border-neutral-700/50 shadow-sm shadow-black/30">
+      <View className="bg-white p-5 rounded-2xl mt-3 border border-slate-100 shadow-sm shadow-slate-200">
         <View className="flex-row justify-between items-start mb-3">
           <View className="flex-1">
-            <Text className="text-lg font-semibold text-white mb-1">
+            <Text className="text-lg font-semibold text-slate-900 mb-1">
               {item.tipoPermiso}
             </Text>
-            <Text className="text-gray-300 text-sm leading-5">
+            <Text className="text-slate-500 text-sm leading-5">
               {item.motivo}
             </Text>
           </View>
           <View
-            className={`px-3 py-2 rounded-full ${estadoConfig.bgColor} flex-row items-center ml-3`}
+            className={`px-3 py-1.5 rounded-full ${estadoConfig.bgColor} flex-row items-center ml-3`}
           >
             <Ionicons
               name={estadoConfig.icon as any}
               size={14}
-              color={estadoConfig.textColor.replace("text-", "")}
+              color={
+                  item.aproved === null ? "#d97706" :
+                  item.aproved === false ? "#dc2626" :
+                  "#059669"
+              }
             />
             <Text
-              className={`${estadoConfig.textColor} text-xs font-medium ml-1`}
+              className={`${estadoConfig.textColor} text-xs font-semibold ml-1`}
             >
               {estadoConfig.text}
             </Text>
           </View>
         </View>
 
-        <View className="flex-row justify-between items-center pt-3 border-t border-neutral-700/50">
+        <View className="flex-row justify-between items-center pt-3 border-t border-slate-100">
             <View className="flex-row items-center">
-                <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
-                <Text className="text-gray-400 ml-2 text-sm">{fechaFormateada}</Text>
+                <Ionicons name="calendar-outline" size={16} color="#64748b" />
+                <Text className="text-slate-500 ml-2 text-sm">{fechaFormateada}</Text>
             </View>
             {item.aproved === null && (
                 <TouchableOpacity onPress={() => handleCancelRequest(item.id)}>
-                    <Text className="text-red-400 text-sm font-semibold">Cancelar</Text>
+                    <Text className="text-red-500 text-sm font-semibold">Cancelar</Text>
                 </TouchableOpacity>
             )}
         </View>
@@ -212,23 +212,23 @@ const PermissionsScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-900">
+    <SafeAreaView className="flex-1 bg-slate-50">
       <View className="p-6 flex-1">
         {/* Header */}
         <View className="flex-row justify-between items-start mb-8">
           <View>
-            <Text className="text-3xl font-bold text-white mb-1">
+            <Text className="text-3xl font-bold text-slate-900 mb-1">
               Mis Permisos
             </Text>
-            <Text className="text-base text-gray-300">
-              Bienvenido, <Text className="text-blue-400">{username}</Text>
+            <Text className="text-base text-slate-500">
+              Bienvenido, <Text className="text-indigo-600 font-medium">{username}</Text>
             </Text>
           </View>
           <TouchableOpacity
             onPress={handleViewChief}
-            className="bg-neutral-800 p-2 rounded-full border border-neutral-700"
+            className="bg-white p-2 rounded-full border border-slate-200 shadow-sm"
           >
-             <Ionicons name="people-outline" size={24} color="white" />
+             <Ionicons name="people-outline" size={24} color="#64748b" />
           </TouchableOpacity>
         </View>
 
@@ -237,43 +237,41 @@ const PermissionsScreen = () => {
           <StatCard
             count={pendientes}
             label="Pendientes"
-            color="bg-amber-500"
+            color="bg-amber-100"
             icon="time-outline"
           />
           <StatCard
             count={aprobados}
             label="Aprobados"
-            color="bg-emerald-500"
+            color="bg-emerald-100"
             icon="checkmark-circle-outline"
           />
           <StatCard
             count={denegados}
             label="Denegados"
-            color="bg-red-500"
+            color="bg-red-100"
             icon="close-circle-outline"
           />
         </View>
 
-        {/* Botón nueva solicitud - Mejorado */}
+        {/* Botón nueva solicitud */}
         <Pressable
-          className="bg-blue-600 p-5 rounded-2xl flex-row justify-center items-center mb-8 shadow-lg shadow-blue-600/30 active:bg-blue-700"
+          className="bg-primary p-4 rounded-xl flex-row justify-center items-center mb-8 shadow-lg shadow-indigo-200 active:opacity-90"
           onPress={() => router.push("/request/page")}
           style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
         >
-          <View className="bg-white/20 p-1 rounded-full">
-            <Ionicons name="add" size={20} color="white" />
-          </View>
-          <Text className="text-white text-lg font-semibold ml-3">
+          <Ionicons name="add-circle-outline" size={24} color="white" />
+          <Text className="text-white text-lg font-semibold ml-2">
             Nueva Solicitud
           </Text>
         </Pressable>
 
         {/* Historial de solicitudes */}
         <View className="mb-4">
-          <Text className="text-xl font-bold text-white mb-1">
+          <Text className="text-xl font-bold text-slate-900 mb-1">
             Mis Solicitudes
           </Text>
-          <Text className="text-sm text-gray-400">
+          <Text className="text-sm text-slate-500">
             Historial de permisos solicitados
           </Text>
         </View>
@@ -296,18 +294,18 @@ const PermissionsScreen = () => {
         <View className="p-4 items-center">
              {chief ? (
                  <>
-                    <View className="w-20 h-20 bg-blue-500 rounded-full items-center justify-center mb-4">
-                        <Text className="text-3xl text-white font-bold">{chief.name?.charAt(0)}</Text>
+                    <View className="w-20 h-20 bg-indigo-100 rounded-full items-center justify-center mb-4">
+                        <Text className="text-3xl text-indigo-600 font-bold">{chief.name?.charAt(0)}</Text>
                     </View>
-                    <Text className="text-xl text-white font-bold mb-1">{chief.name}</Text>
-                    <Text className="text-gray-400 mb-4">{chief.email}</Text>
-                    <View className="flex-row items-center bg-neutral-800 px-4 py-2 rounded-lg">
-                        <Ionicons name="briefcase-outline" size={16} color="#9CA3AF" />
-                        <Text className="text-gray-300 ml-2">{user?.section}</Text>
+                    <Text className="text-xl text-slate-900 font-bold mb-1">{chief.name}</Text>
+                    <Text className="text-slate-500 mb-4">{chief.email}</Text>
+                    <View className="flex-row items-center bg-slate-100 px-4 py-2 rounded-lg">
+                        <Ionicons name="briefcase-outline" size={16} color="#64748b" />
+                        <Text className="text-slate-600 ml-2">{user?.section}</Text>
                     </View>
                  </>
              ) : (
-                 <Text className="text-gray-400">No se encontró información del jefe de sección.</Text>
+                 <Text className="text-slate-400">No se encontró información del jefe de sección.</Text>
              )}
         </View>
       </CustomModal>

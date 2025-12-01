@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, Switch, Pressable } from "react-native";
-import Screen from "@/components/common/Screen";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase";
+import { Ionicons } from "@expo/vector-icons";
+import Button from "@/components/common/Button";
 
 const Settings = () => {
   const logout = async () => {
@@ -11,31 +13,28 @@ const Settings = () => {
   const [notifications, setNotifications] = useState(true);
 
   return (
-    <Screen>
+    <SafeAreaView className="flex-1 bg-slate-50">
       <ScrollView
-        className="flex-1 bg-neutral-900 px-4"
+        className="flex-1 px-6 pt-4"
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row justify-between items-center mt-2 mb-6">
-          <Text className="text-2xl font-bold text-[#F1F5F9]">
-            Configuración
+        <View className="flex-row justify-between items-center mb-8">
+          <Text className="text-3xl font-bold text-slate-900">
+            Ajustes
           </Text>
         </View>
 
         <SettingsSection title="Cuenta">
           <SettingItem
             title="Perfil"
-            subtitle="Edita tu información personal"
+            subtitle="Información personal"
+            icon="person-outline"
             onPress={() => {}}
           />
           <SettingItem
             title="Seguridad"
-            subtitle="Contraseña y autenticación"
-            onPress={() => {}}
-          />
-          <SettingItem
-            title="Privacidad"
-            subtitle="Controla quién puede ver tu contenido"
+            subtitle="Contraseña y acceso"
+            icon="lock-closed-outline"
             onPress={() => {}}
           />
         </SettingsSection>
@@ -43,69 +42,82 @@ const Settings = () => {
         <SettingsSection title="Preferencias">
           <SettingItem
             title="Notificaciones"
-            subtitle="Gestiona tus alertas"
+            subtitle="Gestionar alertas"
+            icon="notifications-outline"
             onPress={() => {}}
             rightElement={
               <Switch
                 value={notifications}
                 onValueChange={setNotifications}
-                trackColor={{ false: "#475569", true: "#6366F1" }}
-                thumbColor="#F1F5F9"
+                trackColor={{ false: "#e2e8f0", true: "#818cf8" }}
+                thumbColor={notifications ? "#4f46e5" : "#f1f5f9"}
               />
             }
           />
-
-          <SettingItem title="Idioma" subtitle="Español" onPress={() => {}} />
+          <SettingItem title="Idioma" subtitle="Español" icon="language-outline" onPress={() => {}} />
         </SettingsSection>
 
         <SettingsSection title="Soporte">
           <SettingItem
             title="Ayuda"
-            subtitle="Preguntas frecuentes y soporte"
+            subtitle="Centro de ayuda"
+            icon="help-circle-outline"
             onPress={() => {}}
           />
           <SettingItem
             title="Acerca de"
             subtitle="Versión 1.0.0"
+            icon="information-circle-outline"
             onPress={() => {}}
           />
         </SettingsSection>
 
-        <Pressable
-          onPress={logout}
-          className="flex-row items-center justify-center bg-indigo-700 py-4 rounded-xl mt-2 mb-6 active:opacity-80"
-        >
-          <Text className="text-[#F1F5F9] text-base font-medium ml-2">
-            Cerrar sesión
-          </Text>
-        </Pressable>
+        <View className="mt-4 mb-10">
+            <Button
+                label="Cerrar sesión"
+                onPress={logout}
+                variant="outline"
+                className="border-red-200 bg-red-50"
+                textClassName="text-red-600 font-bold"
+            />
+        </View>
       </ScrollView>
-    </Screen>
+    </SafeAreaView>
   );
 };
-const SettingItem = ({ title, subtitle, onPress, rightElement }: any) => {
+
+const SettingItem = ({ title, subtitle, onPress, rightElement, icon }: any) => {
   return (
     <Pressable
-      className="flex-row items-center px-4 py-4 border-b border-neutral-700 active:opacity-70"
+      className="flex-row items-center px-4 py-4 border-b border-slate-100 last:border-b-0 active:bg-slate-50"
       onPress={onPress}
     >
+      {icon && (
+        <View className="mr-4 w-8 items-center">
+            <Ionicons name={icon} size={22} color="#64748b" />
+        </View>
+      )}
       <View className="flex-1">
-        <Text className="text-base font-medium text-[#F1F5F9] mb-1">
+        <Text className="text-base font-semibold text-slate-900">
           {title}
         </Text>
-        {subtitle && <Text className="text-sm text-[#94A3B8]">{subtitle}</Text>}
+        {subtitle && <Text className="text-sm text-slate-500 mt-0.5">{subtitle}</Text>}
       </View>
-      {rightElement && <View className="ml-2">{rightElement}</View>}
+      {rightElement ? (
+          <View className="ml-2">{rightElement}</View>
+      ) : (
+          <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
+      )}
     </Pressable>
   );
 };
 
 const SettingsSection = ({ title, children }: any) => (
-  <View className="mb-6">
-    <Text className="text-base font-semibold text-indigo-600 mb-3 pl-2">
+  <View className="mb-8">
+    <Text className="text-sm font-bold text-slate-500 mb-3 pl-2 uppercase tracking-wide">
       {title}
     </Text>
-    <View className="bg-neutral-800 rounded-xl overflow-hidden">
+    <View className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100">
       {children}
     </View>
   </View>

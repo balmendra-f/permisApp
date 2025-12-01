@@ -21,11 +21,13 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase";
 import Screen from "@/components/common/Screen";
 import DateTimePicker from "@/components/common/DateTimePicker";
-import CustomModal, { colors } from "@/components/common/Modal";
+import CustomModal from "@/components/common/Modal";
 import { createRequest } from "@/api/request/createRequest";
 import { getRequestsByUser } from "@/api/request/getRequestByUser";
 import { useFileUpload } from "@/components/request/hook/UseFileUpload";
 import { useAuth } from "@/providers/AuthProvider";
+import { Colors } from "@/constants/Colors";
+import Button from "@/components/common/Button";
 
 const tiposPermiso = [
   "Vacaciones",
@@ -49,7 +51,7 @@ export default function NuevaSolicitudForm() {
   const userId = auth.currentUser?.uid;
   const section = user?.section;
 
-  const [userData, setUserData] = useState<User | null>(user);
+  const [userData, setUserData] = useState<any | null>(user);
   const [takenDates, setTakenDates] = useState<Date[]>([]);
 
   useEffect(() => {
@@ -59,23 +61,20 @@ export default function NuevaSolicitudForm() {
 
       const unsubscribe = onSnapshot(ref, (snap) => {
         if (snap.exists()) {
-          setUserData(snap.data() as User);
+          setUserData(snap.data() as any);
         }
       });
 
-      // Fetch user requests to mark taken dates
       const unsubscribeRequests = getRequestsByUser(user.id, (data: any[]) => {
           const dates: Date[] = [];
           data.forEach(req => {
-              if (req.aproved === true) { // Only approved requests
+              if (req.aproved === true) {
                   let start = req.fechaInicio?.toDate ? req.fechaInicio.toDate() : new Date(req.fechaInicio);
                   let end = req.fechaFin?.toDate ? req.fechaFin.toDate() : new Date(req.fechaFin);
 
-                  // Normalize
                   start.setHours(0,0,0,0);
                   end.setHours(0,0,0,0);
 
-                  // Add all dates in range
                   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
                       dates.push(new Date(d));
                   }
@@ -100,7 +99,6 @@ export default function NuevaSolicitudForm() {
   const [saldoModalVisible, setSaldoModalVisible] = useState(false);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
 
-  // Soporte para horas
   const [esPorHoras, setEsPorHoras] = useState(false);
   const [horaInicio, setHoraInicio] = useState<Date | null>(new Date());
   const [horaFin, setHoraFin] = useState<Date | null>(new Date(new Date().setHours(new Date().getHours() + 1)));
@@ -121,7 +119,7 @@ export default function NuevaSolicitudForm() {
 
   const calcularDias = (inicio: Date, fin: Date) => {
     const diffTime = Math.abs(fin.getTime() - inicio.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // incluye el día inicial
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   };
 
   const calcularHoras = (inicio: Date, fin: Date) => {
@@ -155,8 +153,6 @@ export default function NuevaSolicitudForm() {
 
     if (esPorHoras && horaInicio && horaFin) {
         const horas = calcularHoras(horaInicio, horaFin);
-        // Convertir horas a días (1 día = 8 horas para validación de saldo, pero se guarda el valor en el backend como sea necesario)
-        // Como el sistema actual descuenta diasSolicitados directamente, enviaremos la fraccion.
         diasSolicitados = horas / 8;
     } else if (fechaFin) {
         diasSolicitados = calcularDias(fechaInicio, fechaFin);
@@ -194,7 +190,7 @@ export default function NuevaSolicitudForm() {
         tipoPermiso,
         tipoSaldo,
         fechaInicio,
-        fechaFin: esPorHoras ? fechaInicio : fechaFin, // Si es por horas, la fecha fin es el mismo dia
+        fechaFin: esPorHoras ? fechaInicio : fechaFin,
         horaInicio: esPorHoras ? horaInicio : null,
         horaFin: esPorHoras ? horaFin : null,
         esPorHoras,
@@ -264,7 +260,7 @@ export default function NuevaSolicitudForm() {
   };
 
   return (
-    <Screen>
+    <Screen className="bg-slate-50">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -273,274 +269,270 @@ export default function NuevaSolicitudForm() {
         <ScrollView
           className="flex-1"
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
         >
-          <View className="px-6 pt-6 pb-6">
+          <View className="px-6 pt-6 pb-6 bg-white border-b border-slate-100 mb-6">
             <View className="flex-row items-center mb-4">
               <Pressable
-                className="mr-4 active:opacity-70"
+                className="mr-4 active:opacity-70 p-2 rounded-full bg-slate-100"
                 onPress={() => router.back()}
               >
-                <Ionicons name="arrow-back" size={24} color="#fff" />
+                <Ionicons name="arrow-back" size={24} color="#0f172a" />
               </Pressable>
               <View className="flex-1">
-                <Text className="text-3xl font-bold text-white">
+                <Text className="text-2xl font-bold text-slate-900">
                   Nueva Solicitud
                 </Text>
-                <Text className="text-base text-gray-400 mt-1">
+                <Text className="text-sm text-slate-500 mt-1">
                   Completa el formulario
                 </Text>
               </View>
             </View>
           </View>
 
-          <View className="mx-4 mb-6 bg-neutral-800 rounded-2xl p-6 shadow-lg">
-            <Text className="text-lg font-semibold text-gray-300 mb-4">
-              Saldo disponible:
-            </Text>
-            <View className="mb-6">
-              <Text className="text-base text-gray-300 mb-1">
-                Vacaciones: {userData ? (userData.vacationsInDays - userData.vacationUsedInDays).toFixed(2) : 0}{" "}
-                días
+          <View className="mx-6">
+            <View className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 mb-6">
+              <Text className="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-wider">
+                Saldo disponible
               </Text>
-              <Text className="text-base text-gray-300">
-                Administrativos: {userData?.administrativeDays} días
-              </Text>
-            </View>
-
-            {/* Tipo de Permiso */}
-            <View className="mb-6">
-              <Text className="text-base font-semibold text-white mb-2">
-                Tipo de Permiso
-              </Text>
-              <Pressable
-                onPress={() => setModalVisible(true)}
-                className="flex-row items-center justify-between border border-neutral-600 rounded-lg px-4 py-3 bg-neutral-700 active:bg-neutral-600"
-              >
-                <Text className="text-base text-white">{tipoPermiso}</Text>
-                <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
-              </Pressable>
-            </View>
-
-            {/* Tipo de saldo */}
-            <View className="mb-6">
-              <Text className="text-base font-semibold text-white mb-2">
-                Tipo de saldo a descontar
-              </Text>
-              <Pressable
-                onPress={() => setSaldoModalVisible(true)}
-                className="flex-row items-center justify-between border border-neutral-600 rounded-lg px-4 py-3 bg-neutral-700 active:bg-neutral-600"
-              >
-                <Text className="text-base text-white">
-                  {opcionesSaldo.find((o) => o.value === tipoSaldo)?.label}
-                </Text>
-                <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
-              </Pressable>
-            </View>
-
-            {/* Toggle Horas */}
-            <View className="mb-6 flex-row items-center justify-between">
-              <Text className="text-base font-semibold text-white">
-                Solicitar por horas
-              </Text>
-              <Switch
-                trackColor={{ false: "#767577", true: "#81b0ff" }}
-                thumbColor={esPorHoras ? "#f5dd4b" : "#f4f3f4"}
-                onValueChange={() => setEsPorHoras((prev) => !prev)}
-                value={esPorHoras}
-              />
-            </View>
-
-            {/* Fechas */}
-            <View className="mb-6">
-              <Text className="text-base font-semibold text-white mb-2">
-                {esPorHoras ? "Fecha" : "Fecha de Inicio"}
-              </Text>
-              <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
-                <DateTimePicker
-                  mode="date"
-                  disableButtons
-                  onDateChange={(date) => setFechaInicio(date)}
-                  value={fechaInicio}
-                  androidTextColor="text-white"
-                  markedDates={takenDates}
-                />
-                <Ionicons name="calendar-outline" size={20} color="#9CA3AF" />
-              </View>
-            </View>
-
-            {!esPorHoras ? (
-              <View className="mb-6">
-                <Text className="text-base font-semibold text-white mb-2">
-                  Fecha de Fin
-                </Text>
-                <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
-                  <DateTimePicker
-                    mode="date"
-                    disableButtons
-                    onDateChange={(date) => setFechaFin(date)}
-                    value={fechaFin}
-                    androidTextColor="text-white"
-                    markedDates={takenDates}
-                  />
-                  <Ionicons name="calendar-outline" size={20} color="#9CA3AF" />
+              <View className="flex-row justify-between">
+                <View className="items-center flex-1 border-r border-slate-100">
+                    <Text className="text-2xl font-bold text-indigo-600">
+                        {userData ? (userData.vacationsInDays - userData.vacationUsedInDays).toFixed(1) : 0}
+                    </Text>
+                    <Text className="text-xs text-slate-500">Vacaciones</Text>
+                </View>
+                <View className="items-center flex-1">
+                    <Text className="text-2xl font-bold text-indigo-600">
+                        {userData?.administrativeDays || 0}
+                    </Text>
+                    <Text className="text-xs text-slate-500">Administrativos</Text>
                 </View>
               </View>
-            ) : (
-                <View className="flex-row justify-between mb-6">
-                    <View className="flex-1 mr-2">
-                        <Text className="text-base font-semibold text-white mb-2">
-                            Hora Inicio
-                        </Text>
-                        <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
-                            <DateTimePicker
-                                mode="time"
-                                disableButtons
-                                onDateChange={(date) => setHoraInicio(date)}
-                                value={horaInicio}
-                                androidTextColor="text-white"
-                            />
-                            <Ionicons name="time-outline" size={20} color="#9CA3AF" />
-                        </View>
-                    </View>
-                    <View className="flex-1 ml-2">
-                        <Text className="text-base font-semibold text-white mb-2">
-                            Hora Fin
-                        </Text>
-                         <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
-                            <DateTimePicker
-                                mode="time"
-                                disableButtons
-                                onDateChange={(date) => setHoraFin(date)}
-                                value={horaFin}
-                                androidTextColor="text-white"
-                            />
-                            <Ionicons name="time-outline" size={20} color="#9CA3AF" />
-                        </View>
-                    </View>
-                </View>
-            )}
-
-            {/* Motivo */}
-            <View className="mb-6">
-              <Text className="text-base font-semibold text-white mb-2">
-                Motivo
-              </Text>
-              <TextInput
-                className="border border-neutral-600 rounded-lg px-4 py-3 text-base text-white bg-neutral-700"
-                placeholder="Describe brevemente el motivo..."
-                placeholderTextColor="#6B7280"
-                value={motivo}
-                onChangeText={setMotivo}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-                style={{ minHeight: 100 }}
-              />
             </View>
 
-            {/* Archivo */}
-            <View className="mb-6">
-              <Text className="text-base font-semibold text-white mb-2">
-                Documento (Opcional)
-              </Text>
-
-              {uploadedFile ? (
-                <View className="border border-green-600 rounded-lg px-4 py-3 bg-neutral-700">
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1 flex-row items-center">
-                      <Ionicons
-                        name="document-attach"
-                        size={20}
-                        color="#10B981"
-                      />
-                      <Text
-                        className="text-sm text-white ml-2 flex-1"
-                        numberOfLines={1}
-                      >
-                        {uploadedFile.fileName}
-                      </Text>
-                    </View>
-                    <Pressable
-                      onPress={handleRemoveFile}
-                      className="ml-2 active:opacity-70"
-                    >
-                      <Ionicons
-                        name="close-circle"
-                        size={24}
-                        color="#989292ff"
-                      />
-                    </Pressable>
-                  </View>
-                  <Text className="text-xs text-green-500 mt-1">
-                    ✓ Archivo subido correctamente
+            {/* Form Fields */}
+            <View className="space-y-6">
+                {/* Tipo de Permiso */}
+                <View>
+                  <Text className="text-sm font-medium text-slate-700 mb-2 ml-1">
+                    Tipo de Permiso
                   </Text>
-                </View>
-              ) : uploading ? (
-                <View className="border border-blue-600 rounded-lg px-4 py-3 bg-neutral-700">
-                  <View className="flex-row items-center justify-between mb-2">
-                    <Text className="text-sm text-white">
-                      Subiendo archivo...
-                    </Text>
-                    <Text className="text-sm text-blue-400">{progress}%</Text>
-                  </View>
-                  <View className="h-2 bg-neutral-600 rounded-full overflow-hidden">
-                    <View
-                      className="h-full bg-blue-500 rounded-full"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </View>
-                </View>
-              ) : (
-                <View className="flex-row items-center gap-3">
-                  <View className="flex-1 border border-neutral-600 rounded-lg px-4 py-3 bg-neutral-700">
-                    <Text className="text-base text-gray-400">
-                      Ningún archivo seleccionado
-                    </Text>
-                  </View>
                   <Pressable
-                    onPress={handleFileUpload}
-                    className="border border-neutral-600 rounded-lg p-3 bg-neutral-700 active:bg-neutral-600"
+                    onPress={() => setModalVisible(true)}
+                    className="flex-row items-center justify-between border border-slate-200 rounded-xl px-4 py-3 bg-white active:bg-slate-50"
                   >
-                    <Ionicons
-                      name="cloud-upload-outline"
-                      size={24}
-                      color="#9CA3AF"
-                    />
+                    <Text className="text-base text-slate-900">{tipoPermiso}</Text>
+                    <Ionicons name="chevron-down" size={20} color="#64748b" />
                   </Pressable>
                 </View>
-              )}
 
-              <Text className="text-sm text-gray-400 mt-2">
-                Certificados médicos u otros documentos
-              </Text>
-            </View>
-
-            {/* Botones */}
-            <View className="flex-row gap-3 mt-4">
-              <Pressable
-                onPress={() => router.back()}
-                className="flex-1 border border-neutral-600 rounded-lg py-4 bg-neutral-700 active:bg-neutral-600"
-                disabled={uploading}
-              >
-                <Text className="text-center text-base font-semibold text-white">
-                  Cancelar
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={handleSubmit}
-                className="flex-1 rounded-lg py-4 bg-blue-600 active:bg-blue-700"
-                disabled={uploading}
-                style={{ opacity: uploading ? 0.5 : 1 }}
-              >
-                {uploading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text className="text-center text-base font-semibold text-white">
-                    Enviar
+                {/* Tipo de saldo */}
+                <View>
+                  <Text className="text-sm font-medium text-slate-700 mb-2 ml-1">
+                    Tipo de saldo a descontar
                   </Text>
+                  <Pressable
+                    onPress={() => setSaldoModalVisible(true)}
+                    className="flex-row items-center justify-between border border-slate-200 rounded-xl px-4 py-3 bg-white active:bg-slate-50"
+                  >
+                    <Text className="text-base text-slate-900">
+                      {opcionesSaldo.find((o) => o.value === tipoSaldo)?.label}
+                    </Text>
+                    <Ionicons name="chevron-down" size={20} color="#64748b" />
+                  </Pressable>
+                </View>
+
+                {/* Toggle Horas */}
+                <View className="flex-row items-center justify-between py-2">
+                  <Text className="text-base font-medium text-slate-900 ml-1">
+                    Solicitar por horas
+                  </Text>
+                  <Switch
+                    trackColor={{ false: "#e2e8f0", true: "#818cf8" }}
+                    thumbColor={esPorHoras ? "#4f46e5" : "#f8fafc"}
+                    onValueChange={() => setEsPorHoras((prev) => !prev)}
+                    value={esPorHoras}
+                  />
+                </View>
+
+                {/* Fechas */}
+                <View>
+                  <Text className="text-sm font-medium text-slate-700 mb-2 ml-1">
+                    {esPorHoras ? "Fecha" : "Fecha de Inicio"}
+                  </Text>
+                  <View className="flex-row items-center border border-slate-200 rounded-xl px-4 bg-white h-14">
+                    <DateTimePicker
+                      mode="date"
+                      disableButtons
+                      onDateChange={(date) => setFechaInicio(date)}
+                      value={fechaInicio}
+                      androidTextColor="text-slate-900"
+                      markedDates={takenDates}
+                      style={{ flex: 1 }}
+                    />
+                    <Ionicons name="calendar-outline" size={20} color="#64748b" />
+                  </View>
+                </View>
+
+                {!esPorHoras ? (
+                  <View>
+                    <Text className="text-sm font-medium text-slate-700 mb-2 ml-1">
+                      Fecha de Fin
+                    </Text>
+                    <View className="flex-row items-center border border-slate-200 rounded-xl px-4 bg-white h-14">
+                      <DateTimePicker
+                        mode="date"
+                        disableButtons
+                        onDateChange={(date) => setFechaFin(date)}
+                        value={fechaFin}
+                        androidTextColor="text-slate-900"
+                        markedDates={takenDates}
+                        style={{ flex: 1 }}
+                      />
+                      <Ionicons name="calendar-outline" size={20} color="#64748b" />
+                    </View>
+                  </View>
+                ) : (
+                    <View className="flex-row justify-between gap-4">
+                        <View className="flex-1">
+                            <Text className="text-sm font-medium text-slate-700 mb-2 ml-1">
+                                Hora Inicio
+                            </Text>
+                            <View className="flex-row items-center border border-slate-200 rounded-xl px-4 bg-white h-14">
+                                <DateTimePicker
+                                    mode="time"
+                                    disableButtons
+                                    onDateChange={(date) => setHoraInicio(date)}
+                                    value={horaInicio}
+                                    androidTextColor="text-slate-900"
+                                />
+                                <Ionicons name="time-outline" size={20} color="#64748b" />
+                            </View>
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-sm font-medium text-slate-700 mb-2 ml-1">
+                                Hora Fin
+                            </Text>
+                             <View className="flex-row items-center border border-slate-200 rounded-xl px-4 bg-white h-14">
+                                <DateTimePicker
+                                    mode="time"
+                                    disableButtons
+                                    onDateChange={(date) => setHoraFin(date)}
+                                    value={horaFin}
+                                    androidTextColor="text-slate-900"
+                                />
+                                <Ionicons name="time-outline" size={20} color="#64748b" />
+                            </View>
+                        </View>
+                    </View>
                 )}
-              </Pressable>
+
+                {/* Motivo */}
+                <View>
+                  <Text className="text-sm font-medium text-slate-700 mb-2 ml-1">
+                    Motivo
+                  </Text>
+                  <TextInput
+                    className="border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 bg-white"
+                    placeholder="Describe brevemente el motivo..."
+                    placeholderTextColor="#94a3b8"
+                    value={motivo}
+                    onChangeText={setMotivo}
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                    style={{ minHeight: 100 }}
+                  />
+                </View>
+
+                {/* Archivo */}
+                <View>
+                  <Text className="text-sm font-medium text-slate-700 mb-2 ml-1">
+                    Documento (Opcional)
+                  </Text>
+
+                  {uploadedFile ? (
+                    <View className="border border-emerald-200 rounded-xl px-4 py-3 bg-emerald-50">
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-1 flex-row items-center">
+                          <Ionicons
+                            name="document-text"
+                            size={24}
+                            color="#10b981"
+                          />
+                          <Text
+                            className="text-sm text-slate-700 ml-2 flex-1 font-medium"
+                            numberOfLines={1}
+                          >
+                            {uploadedFile.fileName}
+                          </Text>
+                        </View>
+                        <Pressable
+                          onPress={handleRemoveFile}
+                          className="ml-2 active:opacity-70 p-1"
+                        >
+                          <Ionicons
+                            name="close-circle"
+                            size={20}
+                            color="#ef4444"
+                          />
+                        </Pressable>
+                      </View>
+                      <Text className="text-xs text-emerald-600 mt-1 ml-8">
+                        Archivo subido correctamente
+                      </Text>
+                    </View>
+                  ) : uploading ? (
+                    <View className="border border-indigo-200 rounded-xl px-4 py-3 bg-indigo-50">
+                      <View className="flex-row items-center justify-between mb-2">
+                        <Text className="text-sm text-slate-700 font-medium">
+                          Subiendo archivo...
+                        </Text>
+                        <Text className="text-sm text-indigo-600 font-bold">{progress}%</Text>
+                      </View>
+                      <View className="h-2 bg-indigo-100 rounded-full overflow-hidden">
+                        <View
+                          className="h-full bg-indigo-600 rounded-full"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </View>
+                    </View>
+                  ) : (
+                    <Pressable
+                        onPress={handleFileUpload}
+                        className="border border-dashed border-slate-300 rounded-xl p-6 bg-slate-50 items-center justify-center active:bg-slate-100"
+                    >
+                        <Ionicons
+                          name="cloud-upload-outline"
+                          size={32}
+                          color="#64748b"
+                        />
+                        <Text className="text-slate-500 mt-2 font-medium">Sube un archivo aquí</Text>
+                        <Text className="text-xs text-slate-400 mt-1">
+                            Certificados médicos u otros documentos
+                        </Text>
+                    </Pressable>
+                  )}
+                </View>
+
+                {/* Botones */}
+                <View className="flex-row gap-4 mt-4 mb-10">
+                  <Button
+                    label="Cancelar"
+                    onPress={() => router.back()}
+                    variant="outline"
+                    className="flex-1 bg-white"
+                    disabled={uploading}
+                  />
+                  <Button
+                    label="Enviar Solicitud"
+                    onPress={handleSubmit}
+                    loading={uploading}
+                    variant="primary"
+                    className="flex-1 shadow-md shadow-indigo-200"
+                  />
+                </View>
             </View>
           </View>
         </ScrollView>
@@ -550,7 +542,7 @@ export default function NuevaSolicitudForm() {
       <CustomModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        title="Seleccionar Tipo de Permiso"
+        title="Tipo de Permiso"
       >
         <View style={styles.modalContent}>
           {tiposPermiso.map((tipo) => (
@@ -575,7 +567,7 @@ export default function NuevaSolicitudForm() {
                 <Ionicons
                   name="checkmark-circle"
                   size={24}
-                  color={colors.primary}
+                  color={Colors.light.tint}
                 />
               )}
             </Pressable>
@@ -587,7 +579,7 @@ export default function NuevaSolicitudForm() {
       <CustomModal
         visible={saldoModalVisible}
         onClose={() => setSaldoModalVisible(false)}
-        title="Seleccionar tipo de saldo"
+        title="Tipo de Saldo"
       >
         <View style={styles.modalContent}>
           {opcionesSaldo.map((opt) => (
@@ -612,7 +604,7 @@ export default function NuevaSolicitudForm() {
                 <Ionicons
                   name="checkmark-circle"
                   size={24}
-                  color={colors.primary}
+                  color={Colors.light.tint}
                 />
               )}
             </Pressable>
@@ -624,7 +616,7 @@ export default function NuevaSolicitudForm() {
       <CustomModal
         visible={uploadModalVisible}
         onClose={() => setUploadModalVisible(false)}
-        title="Seleccionar tipo de archivo"
+        title="Adjuntar Archivo"
       >
         <View style={styles.modalContent}>
           <Pressable
@@ -635,15 +627,17 @@ export default function NuevaSolicitudForm() {
             ]}
           >
             <View className="flex-row items-center flex-1">
-              <Ionicons name="document-text" size={24} color="#60A5FA" />
-              <View className="ml-3">
+              <View className="p-2 bg-blue-100 rounded-full mr-3">
+                 <Ionicons name="document-text" size={24} color="#3b82f6" />
+              </View>
+              <View>
                 <Text style={styles.optionText}>Documento</Text>
-                <Text className="text-xs text-gray-400 mt-1">
+                <Text className="text-xs text-slate-400 mt-1">
                   PDF, Word, etc.
                 </Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
           </Pressable>
 
           <Pressable
@@ -654,15 +648,17 @@ export default function NuevaSolicitudForm() {
             ]}
           >
             <View className="flex-row items-center flex-1">
-              <Ionicons name="image" size={24} color="#60A5FA" />
-              <View className="ml-3">
+               <View className="p-2 bg-purple-100 rounded-full mr-3">
+                  <Ionicons name="image" size={24} color="#a855f7" />
+               </View>
+              <View>
                 <Text style={styles.optionText}>Imagen</Text>
-                <Text className="text-xs text-gray-400 mt-1">
+                <Text className="text-xs text-slate-400 mt-1">
                   JPG, PNG, etc.
                 </Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
           </Pressable>
         </View>
       </CustomModal>
@@ -678,23 +674,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 8,
-    borderRadius: 8,
-    backgroundColor: colors.surface,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#f1f5f9",
   },
   optionItemSelected: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.primary,
+    backgroundColor: "#e0e7ff",
+    borderColor: "#4f46e5",
   },
   optionText: {
     fontSize: 16,
-    color: colors.text,
+    color: "#0f172a",
+    fontWeight: "500",
   },
   optionTextSelected: {
     fontWeight: "600",
-    color: colors.primary,
+    color: "#4f46e5",
   },
 });

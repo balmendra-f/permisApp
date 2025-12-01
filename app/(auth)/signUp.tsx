@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, Text, Keyboard, Pressable } from "react-native";
+import { View, Text, Keyboard, KeyboardAvoidingView, ScrollView, Platform, Alert } from "react-native";
 import { router } from "expo-router";
 import {
   createUserWithEmailAndPassword,
@@ -11,10 +11,10 @@ import useCountry from "@/hooks/useCountry";
 import { useScreen } from "@/providers/ScreenProvider";
 import Header from "@/components/common/Header";
 import Screen from "@/components/common/Screen";
-import useImageUpload from "@/hooks/useImageUpload";
+import Button from "@/components/common/Button";
+import { FloatingTitleTextInputField } from "@/components/common/FloatingTitleTextInputField";
 
 const SignUp = () => {
-  const { imageUrl, isUploading } = useImageUpload();
   const { setIsLoading } = useScreen();
   const { countryCode } = useCountry();
 
@@ -28,14 +28,15 @@ const SignUp = () => {
     sectionBoss: "", // Nuevo campo opcional
   });
 
+  const [localLoading, setLocalLoading] = useState(false);
+
   useEffect(() => {
     setFormData((prevState) => ({
       ...prevState,
       country: countryCode,
     }));
-  }, [countryCode, imageUrl]);
+  }, [countryCode]);
 
-  const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleInputChange = (name: string, value: string) => {
@@ -63,27 +64,22 @@ const SignUp = () => {
 
   const validateForm = () => {
     if (!formData.email.trim()) {
-      setError(true);
       setErrorMessage("Please enter an email");
       return false;
     }
     if (!formData.name.trim()) {
-      setError(true);
       setErrorMessage("Please enter your name");
       return false;
     }
     if (!formData.section.trim()) {
-      setError(true);
       setErrorMessage("Please enter your section");
       return false;
     }
     if (formData.password.length < 6) {
-      setError(true);
       setErrorMessage("Password must be at least 6 characters");
       return false;
     }
     if (formData.password !== formData.password2) {
-      setError(true);
       setErrorMessage("Passwords do not match");
       return false;
     }
@@ -92,11 +88,11 @@ const SignUp = () => {
 
   const onSubmit = async () => {
     Keyboard.dismiss();
-    setError(false);
+    setErrorMessage("");
 
     if (!validateForm()) return;
 
-    setIsLoading(true);
+    setLocalLoading(true);
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -111,20 +107,19 @@ const SignUp = () => {
         email: formData.email,
         country: formData.country,
         section: formData.section,
-        sectionBoss: formData.sectionBoss || null, // Guardar opcional
+        sectionBoss: formData.sectionBoss || null,
       });
 
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      router.replace("/");
+      // router.replace("/"); // Handled by auth listener
     } catch (error: any) {
-      setError(true);
-      setErrorMessage(
-        error.code === "auth/email-already-in-use"
-          ? "Email already in use"
-          : "Error creating account. Please try again."
-      );
+      const msg = error.code === "auth/email-already-in-use"
+        ? "El correo ya está en uso."
+        : "Error creando la cuenta.";
+      setErrorMessage(msg);
+      Alert.alert("Error", msg);
     } finally {
-      setIsLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -136,120 +131,108 @@ const SignUp = () => {
     formData.password !== formData.password2;
 
   return (
-    <Screen>
+    <Screen safeArea={false} className="bg-background">
       <Header title="Crear cuenta" />
-      <View className="flex-1 p-6">
-        <Text className="text-3xl font-bold text-white text-center mb-2">
-          Crear cuenta
-        </Text>
-        <Text className="text-base text-gray-400 text-center mb-8">
-          Completa tus datos
-        </Text>
-
-        <View className="space-y-4">
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Correo electrónico"
-              placeholderTextColor="#666"
-              value={formData.email}
-              onChangeText={(value) => handleInputChange("email", value)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Nombre completo"
-              placeholderTextColor="#666"
-              value={formData.name}
-              onChangeText={(value) => handleInputChange("name", value)}
-              autoCapitalize="words"
-            />
-          </View>
-
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Sección (Solo números)"
-              placeholderTextColor="#666"
-              value={formData.section}
-              onChangeText={handleSectionChange}
-              keyboardType="numeric"
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Sección jefatura (opcional)"
-              placeholderTextColor="#666"
-              value={formData.sectionBoss}
-              onChangeText={handleSectionBossChange}
-              keyboardType="numeric"
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Contraseña"
-              placeholderTextColor="#666"
-              value={formData.password}
-              onChangeText={(value) => handleInputChange("password", value)}
-              secureTextEntry
-              autoCapitalize="none"
-              textContentType="oneTimeCode"
-              autoComplete="off"
-            />
-          </View>
-
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Confirmar contraseña"
-              placeholderTextColor="#666"
-              value={formData.password2}
-              onChangeText={(value) => handleInputChange("password2", value)}
-              secureTextEntry
-              autoCapitalize="none"
-              textContentType="oneTimeCode"
-              autoComplete="off"
-            />
-          </View>
-
-          {error && (
-            <Text className="text-red-500 text-sm text-center">
-              {errorMessage}
-            </Text>
-          )}
-        </View>
-
-        <Pressable
-          onPress={onSubmit}
-          disabled={isFormIncomplete || isUploading}
-          className={`rounded-xl p-4 items-center mt-6 mb-4 ${
-            isFormIncomplete || isUploading ? "bg-gray-600" : "bg-indigo-700"
-          }`}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-white text-base font-semibold">
-            {isUploading ? "Subiendo imagen..." : "Crear cuenta"}
-          </Text>
-        </Pressable>
+          <View className="flex-1 px-6 pb-10 pt-4">
+            <View className="mb-6">
+              <Text className="text-3xl font-bold text-slate-900 text-center mb-2">
+                Únete
+              </Text>
+              <Text className="text-base text-slate-500 text-center">
+                Completa tus datos para empezar
+              </Text>
+            </View>
 
-        <View className="flex-row justify-center items-center">
-          <Text className="text-gray-400 text-sm">¿Ya tienes una cuenta? </Text>
-          <Pressable onPress={() => router.push("/(auth)")}>
-            <Text className="text-indigo-500 text-sm font-semibold">
-              Iniciar sesión
-            </Text>
-          </Pressable>
-        </View>
-      </View>
+            <View className="space-y-4">
+              <FloatingTitleTextInputField
+                title="Correo electrónico"
+                value={formData.email}
+                onChange={(value) => handleInputChange("email", value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+
+              <FloatingTitleTextInputField
+                title="Nombre completo"
+                value={formData.name}
+                onChange={(value) => handleInputChange("name", value)}
+                autoCapitalize="words"
+              />
+
+              <View className="flex-row space-x-4">
+                <View className="flex-1">
+                  <FloatingTitleTextInputField
+                    title="Sección"
+                    value={formData.section}
+                    onChange={handleSectionChange}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View className="flex-1">
+                  <FloatingTitleTextInputField
+                    title="Jefatura (Opc.)"
+                    value={formData.sectionBoss}
+                    onChange={handleSectionBossChange}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+
+              <FloatingTitleTextInputField
+                title="Contraseña"
+                value={formData.password}
+                onChange={(value) => handleInputChange("password", value)}
+                secureTextEntry
+                autoCapitalize="none"
+              />
+
+              <FloatingTitleTextInputField
+                title="Confirmar contraseña"
+                value={formData.password2}
+                onChange={(value) => handleInputChange("password2", value)}
+                secureTextEntry
+                autoCapitalize="none"
+              />
+
+              {errorMessage !== "" && (
+                <Text className="text-destructive text-sm text-center font-medium mt-2">
+                  {errorMessage}
+                </Text>
+              )}
+            </View>
+
+            <Button
+              label="Crear cuenta"
+              onPress={onSubmit}
+              disabled={isFormIncomplete}
+              loading={localLoading}
+              variant="primary"
+              size="lg"
+              className="mt-8 mb-4 shadow-md shadow-indigo-200"
+            />
+
+            <View className="flex-row justify-center items-center mb-6">
+              <Text className="text-slate-500 text-sm">¿Ya tienes una cuenta? </Text>
+              <Button
+                label="Iniciar sesión"
+                onPress={() => router.push("/(auth)")}
+                variant="ghost"
+                size="sm"
+                className="px-1 h-auto"
+                textClassName="text-primary font-bold"
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 };
