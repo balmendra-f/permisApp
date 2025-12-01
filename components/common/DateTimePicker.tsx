@@ -28,6 +28,7 @@ const DateTimePicker: FC<{
   value: Date | undefined | null;
   androidTextColor?: string;
   customDateFormat?: string;
+  markedDates?: Date[]; // Fechas a deshabilitar o marcar
 }> = ({
   disable,
   mode,
@@ -38,6 +39,7 @@ const DateTimePicker: FC<{
   value,
   androidTextColor = "text-white",
   customDateFormat,
+  markedDates = [],
 }) => {
   const [show, setShow] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(value || new Date());
@@ -85,6 +87,13 @@ const DateTimePicker: FC<{
     }
   };
 
+  // Verificar si la fecha seleccionada está marcada (ocupada)
+  const isMarked = markedDates.some(d =>
+      d.getDate() === selectedDate.getDate() &&
+      d.getMonth() === selectedDate.getMonth() &&
+      d.getFullYear() === selectedDate.getFullYear()
+  );
+
   return (
     <View className="flex items-center space-y-4 flex-1">
       {!disableButtons && mode === "date" && (
@@ -103,8 +112,8 @@ const DateTimePicker: FC<{
       >
         {Platform.OS === "android" ? (
           <>
-            <Text className={`${androidTextColor} text-base`}>
-              {formattedDate}
+            <Text className={`${androidTextColor} text-base ${isMarked ? "text-red-400 font-bold" : ""}`}>
+              {formattedDate} {isMarked ? "(Ocupado)" : ""}
             </Text>
             {show && (
               <RNDateTimePicker
@@ -117,15 +126,18 @@ const DateTimePicker: FC<{
             )}
           </>
         ) : (
-          <RNDateTimePicker
-            disabled={disable}
-            value={selectedDate}
-            mode={mode}
-            is24Hour={true}
-            onChange={onChange}
-            themeVariant="dark"
-            accentColor="#1976D2"
-          />
+           <View className="items-center">
+              {isMarked && <Text className="text-red-400 text-xs mb-1">Día tomado</Text>}
+              <RNDateTimePicker
+                disabled={disable}
+                value={selectedDate}
+                mode={mode}
+                is24Hour={true}
+                onChange={onChange}
+                themeVariant="dark"
+                accentColor={isMarked ? "#EF4444" : "#1976D2"}
+              />
+           </View>
         )}
       </TouchableOpacity>
 

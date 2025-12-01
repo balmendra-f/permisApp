@@ -1,15 +1,94 @@
-import React from "react";
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  Alert,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { useRequests } from "@/providers/RequestProvider";
+import { cancelRequest } from "@/api/request/cancelRequest";
+import CustomModal from "@/components/common/Modal";
+import { getDocs, query, collection, where } from "firebase/firestore";
+import { db } from "@/firebase";
 
 const PermissionsScreen = () => {
   const { user } = useAuth();
   const username = user?.name;
   const { requests } = useRequests();
+  const [chiefModalVisible, setChiefModalVisible] = useState(false);
+  const [chief, setChief] = useState<any>(null);
+
+  const handleCancelRequest = async (id: string) => {
+    Alert.alert(
+      "Cancelar Solicitud",
+      "¿Estás seguro de que deseas cancelar esta solicitud?",
+      [
+        {
+          text: "No",
+          style: "cancel",
+        },
+        {
+          text: "Sí, cancelar",
+          onPress: async () => {
+            try {
+              await cancelRequest(id);
+              Alert.alert("Éxito", "Solicitud cancelada correctamente.");
+            } catch (error) {
+              Alert.alert("Error", "No se pudo cancelar la solicitud.");
+              console.error(error);
+            }
+          },
+          style: "destructive",
+        },
+      ]
+    );
+  };
+
+  const handleViewChief = async () => {
+      setChiefModalVisible(true);
+      if (chief) return;
+
+      try {
+          if (user?.sectionBoss) {
+              // Fetch by ID if stored
+             // We can assume user.sectionBoss might be the name or ID.
+             // If it's a string name, we display it.
+             // If it's an ID, we should fetch it. Let's assume it's a Name for now based on typical small app usage, or try to fetch if it looks like an ID.
+             // Actually, the requirement says "Visualize the section chiefs".
+             // If sectionBoss is stored in user, let's use it.
+             // But if we need to find who is admin of my section:
+             const q = query(
+                 collection(db, "users"),
+                 where("section", "==", user.section),
+                 where("isAdmin", "==", true)
+             );
+             const querySnapshot = await getDocs(q);
+             if (!querySnapshot.empty) {
+                 setChief(querySnapshot.docs[0].data());
+             }
+          } else {
+             // Fallback: search for admin in section
+             if (user?.section) {
+                 const q = query(
+                     collection(db, "users"),
+                     where("section", "==", user.section),
+                     where("isAdmin", "==", true)
+                 );
+                 const querySnapshot = await getDocs(q);
+                 if (!querySnapshot.empty) {
+                     setChief(querySnapshot.docs[0].data());
+                 }
+             }
+          }
+      } catch (error) {
+          console.error("Error fetching chief", error);
+      }
+  };
 
   const pendientes = requests.filter((r: any) => r.aproved === null).length;
   const aprobados = requests.filter((r: any) => r.aproved === true).length;
@@ -114,9 +193,16 @@ const PermissionsScreen = () => {
           </View>
         </View>
 
-        <View className="flex-row items-center pt-3 border-t border-neutral-700/50">
-          <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
-          <Text className="text-gray-400 ml-2 text-sm">{fechaFormateada}</Text>
+        <View className="flex-row justify-between items-center pt-3 border-t border-neutral-700/50">
+            <View className="flex-row items-center">
+                <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
+                <Text className="text-gray-400 ml-2 text-sm">{fechaFormateada}</Text>
+            </View>
+            {item.aproved === null && (
+                <TouchableOpacity onPress={() => handleCancelRequest(item.id)}>
+                    <Text className="text-red-400 text-sm font-semibold">Cancelar</Text>
+                </TouchableOpacity>
+            )}
         </View>
       </View>
     );
@@ -135,6 +221,12 @@ const PermissionsScreen = () => {
               Bienvenido, <Text className="text-blue-400">{username}</Text>
             </Text>
           </View>
+          <TouchableOpacity
+            onPress={handleViewChief}
+            className="bg-neutral-800 p-2 rounded-full border border-neutral-700"
+          >
+             <Ionicons name="people-outline" size={24} color="white" />
+          </TouchableOpacity>
         </View>
 
         {/* Conteo de permisos - Mejorado */}
@@ -190,6 +282,31 @@ const PermissionsScreen = () => {
           showsVerticalScrollIndicator={false}
         />
       </View>
+
+      {/* Modal Jefe */}
+      <CustomModal
+        visible={chiefModalVisible}
+        onClose={() => setChiefModalVisible(false)}
+        title="Mi Jefe de Sección"
+      >
+        <View className="p-4 items-center">
+             {chief ? (
+                 <>
+                    <View className="w-20 h-20 bg-blue-500 rounded-full items-center justify-center mb-4">
+                        <Text className="text-3xl text-white font-bold">{chief.name?.charAt(0)}</Text>
+                    </View>
+                    <Text className="text-xl text-white font-bold mb-1">{chief.name}</Text>
+                    <Text className="text-gray-400 mb-4">{chief.email}</Text>
+                    <View className="flex-row items-center bg-neutral-800 px-4 py-2 rounded-lg">
+                        <Ionicons name="briefcase-outline" size={16} color="#9CA3AF" />
+                        <Text className="text-gray-300 ml-2">{user?.section}</Text>
+                    </View>
+                 </>
+             ) : (
+                 <Text className="text-gray-400">No se encontró información del jefe de sección.</Text>
+             )}
+        </View>
+      </CustomModal>
     </SafeAreaView>
   );
 };
