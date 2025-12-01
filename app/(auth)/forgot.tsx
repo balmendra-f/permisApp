@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  TextInput,
   Text,
   Alert,
   Image,
@@ -12,6 +11,8 @@ import { useScreen } from "../../providers/ScreenProvider";
 import { router } from "expo-router";
 import Header from "@/components/common/Header";
 import Screen from "@/components/common/Screen";
+import Button from "@/components/common/Button";
+import { FloatingTitleTextInputField } from "@/components/common/FloatingTitleTextInputField";
 
 const Forgot = () => {
   const auth = getAuth();
@@ -19,6 +20,7 @@ const Forgot = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const isValidEmail = (email: string): boolean => {
     const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -26,11 +28,11 @@ const Forgot = () => {
   };
 
   const onSubmit = async () => {
-    setIsLoading(true);
+    setLoading(true);
     if (!isValidEmail(email)) {
       setError(true);
       setErrorMessage("Ingresa un correo electrónico válido");
-      setIsLoading(false);
+      setLoading(false);
       return;
     }
 
@@ -46,69 +48,68 @@ const Forgot = () => {
     } catch (error) {
       setError(true);
       setErrorMessage(
-        "Error al enviar el correo de restablecimiento. Inténtalo de nuevo."
+        "Error al enviar el correo. Verifica que la cuenta exista."
       );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Screen>
-      <Header title="¿Olvidaste tu contraseña?" />
+    <Screen safeArea={false} className="bg-background">
+      <Header title="Recuperar cuenta" />
       <View className="flex-1 p-6 justify-center">
-        <View className="items-center mb-16">
-          <Image
-            source={require("../../assets/images/icon.png")}
-            className="h-40 w-40 mt-20 rounded-full"
-            resizeMode="contain"
-          />
+        <View className="items-center mb-10">
+          <View className="bg-card p-4 rounded-3xl shadow-sm mb-6 border border-border">
+            <Image
+              source={require("../../assets/images/icon.png")}
+              className="h-24 w-24"
+              resizeMode="contain"
+            />
+          </View>
+
+          <Text className="text-3xl font-bold text-foreground text-center mb-2">
+            Restablecer contraseña
+          </Text>
+          <Text className="text-base text-muted-foreground text-center mb-8 max-w-xs">
+            Ingresa tu correo para recibir instrucciones
+          </Text>
         </View>
 
-        <Text className="text-3xl font-bold text-white text-center mb-2">
-          Restablecer contraseña
-        </Text>
-        <Text className="text-base text-gray-400 text-center mb-8">
-          Ingresa tu correo para recibir instrucciones
-        </Text>
-
-        <View className="mb-6">
-          <TextInput
-            className="bg-neutral-800 rounded-xl p-4 mb-2 text-white text-base"
-            placeholder="Correo electrónico"
-            placeholderTextColor="#666"
+        <View className="mb-6 w-full max-w-md self-center">
+          <FloatingTitleTextInputField
+            title="Correo electrónico"
             value={email}
-            onChangeText={setEmail}
+            onChange={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
             autoFocus
+            error={error ? errorMessage : undefined}
+            touched={error}
           />
-          {error && (
-            <Text className="text-red-500 text-sm mt-2">{errorMessage}</Text>
-          )}
-        </View>
 
-        <Pressable
-          onPress={onSubmit}
-          className="bg-indigo-700 rounded-xl p-4 items-center mb-4 active:opacity-80"
-        >
-          <Text className="text-white text-base font-semibold">
-            Enviar enlace
-          </Text>
-        </Pressable>
+          <Button
+            label="Enviar enlace"
+            onPress={onSubmit}
+            loading={loading}
+            variant="primary"
+            size="lg"
+            className="mt-4 mb-6 shadow-md shadow-primary/30"
+          />
 
-        <View className="flex-row justify-center items-center">
-          <Text className="text-gray-400 text-sm">
-            ¿Recordaste tu contraseña?{" "}
-          </Text>
-          <Pressable
-            onPress={() => router.push("/(auth)")}
-            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-          >
-            <Text className="text-indigo-500 text-sm font-semibold">
-              Iniciar sesión
+          <View className="flex-row justify-center items-center">
+            <Text className="text-muted-foreground text-sm">
+              ¿Recordaste tu contraseña?{" "}
             </Text>
-          </Pressable>
+            <Button
+              label="Iniciar sesión"
+              onPress={() => router.push("/(auth)")}
+              variant="ghost"
+              size="sm"
+              className="px-1 h-auto"
+              textClassName="text-primary font-bold"
+            />
+          </View>
         </View>
       </View>
     </Screen>

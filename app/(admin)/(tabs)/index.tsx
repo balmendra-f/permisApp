@@ -15,6 +15,9 @@ import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRequests } from "@/providers/RequestProvider";
 import { updateRequestById } from "@/api/request/updateById";
 import { useAuth } from "@/providers/AuthProvider";
+import Button from "@/components/common/Button";
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "nativewind";
 
 interface Solicitud {
   id: string;
@@ -35,6 +38,7 @@ export default function PanelAdmin() {
   const { user } = useAuth();
   const section = user?.section;
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const { colorScheme } = useColorScheme();
 
   const solicitudesPendientes = requests.filter(
     (req: Solicitud) => req.aproved === null && req.section === section
@@ -65,12 +69,12 @@ export default function PanelAdmin() {
 
   const getTipoColor = (tipo: string) => {
     const colores: { [key: string]: string } = {
-      Vacaciones: "#1E88E5",
-      "Permiso Personal": "#9C27B0",
-      "Licencia Médica": "#43A047",
-      "Día Libre": "#FB8C00",
+      Vacaciones: "#3b82f6", // Blue 500
+      "Permiso Personal": "#a855f7", // Purple 500
+      "Licencia Médica": "#10b981", // Emerald 500
+      "Día Libre": "#f59e0b", // Amber 500
     };
-    return colores[tipo] || "#757575";
+    return colores[tipo] || "#64748b"; // Slate 500
   };
 
   const handleAprobar = async (id: string) => {
@@ -127,12 +131,14 @@ export default function PanelAdmin() {
     );
   };
 
+  const isDark = colorScheme === 'dark';
+
   if (!section) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-background">
         <View className="flex-1 justify-center items-center gap-4">
-          <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
-          <Text className="text-gray-400 text-base">
+          <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
+          <Text className="text-muted-foreground text-base">
             Tu usuario no tiene una sección asignada
           </Text>
         </View>
@@ -142,10 +148,10 @@ export default function PanelAdmin() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-background">
         <View className="flex-1 justify-center items-center gap-4">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="text-gray-400 text-base">
+          <ActivityIndicator size="large" color="#4f46e5" />
+          <Text className="text-muted-foreground text-base">
             Cargando solicitudes...
           </Text>
         </View>
@@ -154,54 +160,60 @@ export default function PanelAdmin() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
-      <StatusBar barStyle="light-content" backgroundColor="#000" />
+    <SafeAreaView className="flex-1 bg-background">
       <ScrollView className="flex-1">
         {/* Encabezado */}
-        <View className="flex-row justify-between items-center p-5 bg-gray-800">
+        <View className="flex-row justify-between items-center p-6 bg-card border-b border-border">
           <View className="flex-row items-center gap-3">
-            <View className="w-15 h-15 rounded-lg bg-blue-600 justify-center items-center">
-              <Ionicons name="shield-outline" size={32} color="#FFF" />
+            <View className="w-12 h-12 rounded-full bg-primary/10 justify-center items-center">
+              <Ionicons name="shield-checkmark" size={24} className="text-primary" />
             </View>
             <View>
-              <Text className="text-white text-2xl font-bold">
-                Panel Administrador
+              <Text className="text-foreground text-2xl font-bold">
+                Panel Admin
               </Text>
-              <Text className="text-gray-400 text-base mt-1">{user?.name}</Text>
+              <Text className="text-muted-foreground text-sm">{user?.name}</Text>
             </View>
           </View>
-          <Pressable>
-            <MaterialIcons name="logout" size={24} color="#9CA3AF" />
+          <Pressable className="p-2 bg-secondary rounded-full border border-border">
+            <MaterialIcons name="logout" size={20} className="text-muted-foreground" />
           </Pressable>
         </View>
 
         {/* Indicador de número de solicitudes */}
-        <View className="bg-gray-800 m-5 p-6 rounded-2xl shadow-md">
-          <Text className="text-white text-base mb-3">
+        <View className="mx-6 mt-6 bg-card p-6 rounded-2xl shadow-sm border border-border">
+          <Text className="text-muted-foreground text-sm font-medium mb-1 uppercase tracking-wide">
             Solicitudes Pendientes
           </Text>
-          <Text className="text-blue-500 text-5xl font-bold">
+          <Text className="text-primary text-4xl font-extrabold">
             {solicitudesPendientes.length}
           </Text>
         </View>
 
         {/* Lista */}
-        <View className="px-5 pt-0">
-          <Text className="text-white text-2xl font-bold mb-1">
-            Solicitudes por Aprobar
-          </Text>
-          <Text className="text-gray-400 text-sm mb-5">
-            Revisa y gestiona las solicitudes
-          </Text>
+        <View className="px-6 py-6">
+          <View className="mb-4">
+            <Text className="text-foreground text-xl font-bold">
+              Por Aprobar
+            </Text>
+            <Text className="text-muted-foreground text-sm">
+              Revisa y gestiona las solicitudes de tu sección
+            </Text>
+          </View>
 
           {solicitudesPendientes.length === 0 ? (
-            <View className="items-center justify-center py-10">
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={48}
-                color="#9CA3AF"
-              />
-              <Text className="text-gray-400 text-base mt-3">
+            <View className="items-center justify-center py-16 bg-card rounded-2xl border border-dashed border-border">
+              <View className="w-16 h-16 bg-secondary rounded-full items-center justify-center mb-4">
+                  <Ionicons
+                    name="checkmark-done"
+                    size={32}
+                    className="text-muted-foreground"
+                  />
+              </View>
+              <Text className="text-muted-foreground text-base font-medium">
+                Todo al día
+              </Text>
+              <Text className="text-muted-foreground/70 text-xs mt-1">
                 No hay solicitudes pendientes
               </Text>
             </View>
@@ -213,83 +225,56 @@ export default function PanelAdmin() {
               return (
                 <View
                   key={solicitud.id}
-                  className="bg-gray-800 p-5 rounded-2xl mb-4 shadow-md"
+                  className="bg-card p-5 rounded-2xl mb-4 shadow-sm border border-border"
                 >
-                  <Text className="text-white text-xl font-bold mb-3">
-                    Usuario: {solicitud.username || "Sin nombre"}
-                  </Text>
+                  <View className="flex-row justify-between items-start mb-3">
+                      <View>
+                        <Text className="text-foreground text-lg font-bold">
+                             {solicitud.username || "Sin nombre"}
+                        </Text>
+                        <View className="flex-row items-center mt-1">
+                            <View className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: badgeColor }} />
+                            <Text className="text-muted-foreground text-xs font-medium uppercase">
+                                {solicitud.tipoPermiso}
+                            </Text>
+                        </View>
+                      </View>
 
-                  <View
-                    className="self-start px-3 py-1 rounded mb-3"
-                    style={{ backgroundColor: badgeColor }}
-                  >
-                    <Text className="text-white text-sm font-semibold">
-                      {solicitud.tipoPermiso}
-                    </Text>
                   </View>
 
-                  <Text className="text-gray-400 text-base mb-3">
+                  <Text className="text-foreground/80 text-base mb-4 leading-6">
                     {solicitud.motivo}
                   </Text>
 
-                  <View className="flex-row items-center gap-2 mb-5">
+                  <View className="flex-row items-center gap-2 mb-6 bg-secondary p-3 rounded-xl">
                     <Ionicons
-                      name="calendar-outline"
+                      name="calendar"
                       size={18}
-                      color="#757575"
+                      className="text-muted-foreground"
                     />
-                    <Text className="text-gray-400 text-sm">
-                      {formatDate(solicitud.fechaInicio)} —{" "}
-                      {formatDate(solicitud.fechaFin)}
+                    <Text className="text-foreground text-sm font-medium">
+                      {formatDate(solicitud.fechaInicio)} <Text className="text-muted-foreground">-</Text> {formatDate(solicitud.fechaFin)}
                     </Text>
                   </View>
 
                   <View className="flex-row gap-3">
-                    <Pressable
-                      className={`flex-1 flex-row items-center justify-center gap-2 py-3 rounded border-2 border-red-700 bg-gray-900 ${
-                        isProcessing ? "opacity-60" : ""
-                      } active:bg-gray-800`}
-                      onPress={() => handleRechazar(solicitud.id)}
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? (
-                        <ActivityIndicator size="small" color="#D32F2F" />
-                      ) : (
-                        <>
-                          <Ionicons
-                            name="close-circle-outline"
-                            size={20}
-                            color="#EF4444"
-                          />
-                          <Text className="text-red-500 text-base font-semibold">
-                            Rechazar
-                          </Text>
-                        </>
-                      )}
-                    </Pressable>
-
-                    <Pressable
-                      className={`flex-1 flex-row items-center justify-center gap-2 py-3 rounded bg-blue-600 ${
-                        isProcessing ? "opacity-60" : ""
-                      } active:bg-blue-700`}
-                      onPress={() => handleAprobar(solicitud.id)}
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? (
-                        <ActivityIndicator size="small" color="#FFF" />
-                      ) : (
-                        <>
-                          <Ionicons
-                            name="checkmark-circle-outline"
-                            size={20}
-                            color="#FFF"
-                          />
-                          <Text className="text-white text-base font-semibold">
-                            Aprobar
-                          </Text>
-                        </>
-                      )}
-                    </Pressable>
+                    <Button
+                        label="Rechazar"
+                        onPress={() => handleRechazar(solicitud.id)}
+                        variant="outline"
+                        className="flex-1 border-destructive/20 bg-destructive/5"
+                        textClassName="text-destructive"
+                        loading={isProcessing}
+                        disabled={isProcessing}
+                    />
+                    <Button
+                        label="Aprobar"
+                        onPress={() => handleAprobar(solicitud.id)}
+                        variant="primary"
+                        className="flex-1"
+                        loading={isProcessing}
+                        disabled={isProcessing}
+                    />
                   </View>
                 </View>
               );
