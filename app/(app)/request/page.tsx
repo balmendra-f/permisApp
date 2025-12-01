@@ -12,14 +12,18 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Switch,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { getAuth } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebase";
 import Screen from "@/components/common/Screen";
 import DateTimePicker from "@/components/common/DateTimePicker";
 import CustomModal, { colors } from "@/components/common/Modal";
 import { createRequest } from "@/api/request/createRequest";
+import { getRequestsByUser } from "@/api/request/getRequestByUser";
 import { useFileUpload } from "@/components/request/hook/UseFileUpload";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -45,6 +49,47 @@ export default function NuevaSolicitudForm() {
   const userId = auth.currentUser?.uid;
   const section = user?.section;
 
+  const [userData, setUserData] = useState<User | null>(user);
+  const [takenDates, setTakenDates] = useState<Date[]>([]);
+
+  useEffect(() => {
+      if (!user) return;
+
+      const ref = doc(db, "users", user.id);
+
+      const unsubscribe = onSnapshot(ref, (snap) => {
+        if (snap.exists()) {
+          setUserData(snap.data() as User);
+        }
+      });
+
+      // Fetch user requests to mark taken dates
+      const unsubscribeRequests = getRequestsByUser(user.id, (data: any[]) => {
+          const dates: Date[] = [];
+          data.forEach(req => {
+              if (req.aproved === true) { // Only approved requests
+                  let start = req.fechaInicio?.toDate ? req.fechaInicio.toDate() : new Date(req.fechaInicio);
+                  let end = req.fechaFin?.toDate ? req.fechaFin.toDate() : new Date(req.fechaFin);
+
+                  // Normalize
+                  start.setHours(0,0,0,0);
+                  end.setHours(0,0,0,0);
+
+                  // Add all dates in range
+                  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                      dates.push(new Date(d));
+                  }
+              }
+          });
+          setTakenDates(dates);
+      });
+
+      return () => {
+          unsubscribe();
+          unsubscribeRequests();
+      };
+    }, [user]);
+
   const [tipoPermiso, setTipoPermiso] = useState("Vacaciones");
   const [tipoSaldo, setTipoSaldo] = useState("vacationsInDays");
   const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
@@ -54,6 +99,12 @@ export default function NuevaSolicitudForm() {
   const [modalVisible, setModalVisible] = useState(false);
   const [saldoModalVisible, setSaldoModalVisible] = useState(false);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
+
+  // Soporte para horas
+  const [esPorHoras, setEsPorHoras] = useState(false);
+  const [horaInicio, setHoraInicio] = useState<Date | null>(new Date());
+  const [horaFin, setHoraFin] = useState<Date | null>(new Date(new Date().setHours(new Date().getHours() + 1)));
+
 
   const {
     uploading,
@@ -73,13 +124,18 @@ export default function NuevaSolicitudForm() {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // incluye el día inicial
   };
 
+  const calcularHoras = (inicio: Date, fin: Date) => {
+      const diffTime = Math.abs(fin.getTime() - inicio.getTime());
+      return Math.round((diffTime / (1000 * 60 * 60)) * 10) / 10;
+  };
+
   const handleSubmit = async () => {
-    if (!fechaInicio || !fechaFin) {
+    if (!fechaInicio || (!fechaFin && !esPorHoras)) {
       Alert.alert("Error", "Por favor selecciona las fechas de inicio y fin.");
       return;
     }
 
-    if (fechaInicio > fechaFin) {
+    if (!esPorHoras && fechaFin && fechaInicio > fechaFin) {
       Alert.alert(
         "Error",
         "La fecha de inicio no puede ser mayor a la fecha de fin."
@@ -87,17 +143,41 @@ export default function NuevaSolicitudForm() {
       return;
     }
 
-    const diasSolicitados = calcularDias(fechaInicio, fechaFin);
+    if (esPorHoras && horaInicio && horaFin && horaInicio >= horaFin) {
+        Alert.alert(
+            "Error",
+            "La hora de inicio no puede ser mayor o igual a la hora de fin."
+        );
+        return;
+    }
+
+    let diasSolicitados = 0;
+
+    if (esPorHoras && horaInicio && horaFin) {
+        const horas = calcularHoras(horaInicio, horaFin);
+        // Convertir horas a días (1 día = 8 horas para validación de saldo, pero se guarda el valor en el backend como sea necesario)
+        // Como el sistema actual descuenta diasSolicitados directamente, enviaremos la fraccion.
+        diasSolicitados = horas / 8;
+    } else if (fechaFin) {
+        diasSolicitados = calcularDias(fechaInicio, fechaFin);
+    }
+
+    if (!userData) return;
 
     const diasDisponibles =
       tipoSaldo === "vacationsInDays"
-        ? user.vacationsInDays - (user.vacationUsedInDays || 0)
-        : user.administrativeDays;
+        ? userData.vacationsInDays - (userData.vacationUsedInDays || 0)
+        : userData.administrativeDays;
+
+    if (diasSolicitados <= 0) {
+        Alert.alert("Error", "La cantidad solicitada debe ser mayor a 0.");
+        return;
+    }
 
     if (diasSolicitados > diasDisponibles) {
       Alert.alert(
-        "Días insuficientes",
-        `Solo tienes ${diasDisponibles} día(s) disponible(s) en ${
+        "Saldo insuficiente",
+        `Solicitas ${Number(diasSolicitados.toFixed(2))} día(s) pero solo tienes ${Number(diasDisponibles.toFixed(2))} día(s) disponible(s) en ${
           tipoSaldo === "vacationsInDays" ? "vacaciones" : "administrativo"
         }.`
       );
@@ -114,11 +194,14 @@ export default function NuevaSolicitudForm() {
         tipoPermiso,
         tipoSaldo,
         fechaInicio,
-        fechaFin,
+        fechaFin: esPorHoras ? fechaInicio : fechaFin, // Si es por horas, la fecha fin es el mismo dia
+        horaInicio: esPorHoras ? horaInicio : null,
+        horaFin: esPorHoras ? horaFin : null,
+        esPorHoras,
         motivo,
         documento: documento || null,
         documentoNombre: uploadedFile?.fileName || null,
-        username: user.name,
+        username: userData.name,
         section,
         diasSolicitados,
       };
@@ -217,11 +300,11 @@ export default function NuevaSolicitudForm() {
             </Text>
             <View className="mb-6">
               <Text className="text-base text-gray-300 mb-1">
-                Vacaciones: {user.vacationsInDays - user.vacationUsedInDays}{" "}
+                Vacaciones: {userData ? (userData.vacationsInDays - userData.vacationUsedInDays).toFixed(2) : 0}{" "}
                 días
               </Text>
               <Text className="text-base text-gray-300">
-                Administrativos: {user.administrativeDays} días
+                Administrativos: {userData?.administrativeDays} días
               </Text>
             </View>
 
@@ -255,10 +338,23 @@ export default function NuevaSolicitudForm() {
               </Pressable>
             </View>
 
+            {/* Toggle Horas */}
+            <View className="mb-6 flex-row items-center justify-between">
+              <Text className="text-base font-semibold text-white">
+                Solicitar por horas
+              </Text>
+              <Switch
+                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                thumbColor={esPorHoras ? "#f5dd4b" : "#f4f3f4"}
+                onValueChange={() => setEsPorHoras((prev) => !prev)}
+                value={esPorHoras}
+              />
+            </View>
+
             {/* Fechas */}
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
-                Fecha de Inicio
+                {esPorHoras ? "Fecha" : "Fecha de Inicio"}
               </Text>
               <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
                 <DateTimePicker
@@ -267,26 +363,63 @@ export default function NuevaSolicitudForm() {
                   onDateChange={(date) => setFechaInicio(date)}
                   value={fechaInicio}
                   androidTextColor="text-white"
+                  markedDates={takenDates}
                 />
                 <Ionicons name="calendar-outline" size={20} color="#9CA3AF" />
               </View>
             </View>
 
-            <View className="mb-6">
-              <Text className="text-base font-semibold text-white mb-2">
-                Fecha de Fin
-              </Text>
-              <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
-                <DateTimePicker
-                  mode="date"
-                  disableButtons
-                  onDateChange={(date) => setFechaFin(date)}
-                  value={fechaFin}
-                  androidTextColor="text-white"
-                />
-                <Ionicons name="calendar-outline" size={20} color="#9CA3AF" />
+            {!esPorHoras ? (
+              <View className="mb-6">
+                <Text className="text-base font-semibold text-white mb-2">
+                  Fecha de Fin
+                </Text>
+                <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
+                  <DateTimePicker
+                    mode="date"
+                    disableButtons
+                    onDateChange={(date) => setFechaFin(date)}
+                    value={fechaFin}
+                    androidTextColor="text-white"
+                    markedDates={takenDates}
+                  />
+                  <Ionicons name="calendar-outline" size={20} color="#9CA3AF" />
+                </View>
               </View>
-            </View>
+            ) : (
+                <View className="flex-row justify-between mb-6">
+                    <View className="flex-1 mr-2">
+                        <Text className="text-base font-semibold text-white mb-2">
+                            Hora Inicio
+                        </Text>
+                        <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
+                            <DateTimePicker
+                                mode="time"
+                                disableButtons
+                                onDateChange={(date) => setHoraInicio(date)}
+                                value={horaInicio}
+                                androidTextColor="text-white"
+                            />
+                            <Ionicons name="time-outline" size={20} color="#9CA3AF" />
+                        </View>
+                    </View>
+                    <View className="flex-1 ml-2">
+                        <Text className="text-base font-semibold text-white mb-2">
+                            Hora Fin
+                        </Text>
+                         <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
+                            <DateTimePicker
+                                mode="time"
+                                disableButtons
+                                onDateChange={(date) => setHoraFin(date)}
+                                value={horaFin}
+                                androidTextColor="text-white"
+                            />
+                            <Ionicons name="time-outline" size={20} color="#9CA3AF" />
+                        </View>
+                    </View>
+                </View>
+            )}
 
             {/* Motivo */}
             <View className="mb-6">
