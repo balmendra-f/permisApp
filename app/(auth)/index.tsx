@@ -4,7 +4,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   Image,
   Keyboard,
   Alert,
@@ -93,29 +93,29 @@ export default function LoginScreen() {
             autoCapitalize="none"
             secureTextEntry={true}
           />
-          <TouchableOpacity onPress={goToForgot} className="self-end">
+          <Pressable onPress={goToForgot} className="self-end">
             <Text className="text-gray-400 text-sm">
               ¿Olvidaste tu contraseña?
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
-        <TouchableOpacity
+        <Pressable
           onPress={onSubmit}
           className="bg-indigo-700 rounded-xl p-4 items-center mb-4"
         >
           <Text className="text-white text-base font-semibold">
             Iniciar sesión
           </Text>
-        </TouchableOpacity>
+        </Pressable>
 
         <View className="flex-row justify-center items-center">
           <Text className="text-gray-400 text-sm">¿No tienes una cuenta? </Text>
-          <TouchableOpacity onPress={() => router.push("/(auth)/signUp")}>
+          <Pressable onPress={() => router.push("/(auth)/signUp")}>
             <Text className="text-indigo-500 text-sm font-semibold">
               Regístrate
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </Screen>

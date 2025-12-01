@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  TextInput,
-  Text,
-  Keyboard,
-  TouchableOpacity,
-} from "react-native";
+import { View, TextInput, Text, Keyboard, Pressable } from "react-native";
 import { router } from "expo-router";
 import {
   createUserWithEmailAndPassword,
@@ -188,7 +182,6 @@ const SignUp = () => {
             />
           </View>
 
-          {/* Campo opcional Sección jefatura */}
           <View className="mt-4">
             <TextInput
               className="bg-neutral-800 rounded-xl p-4 text-white text-base"
@@ -210,6 +203,8 @@ const SignUp = () => {
               onChangeText={(value) => handleInputChange("password", value)}
               secureTextEntry
               autoCapitalize="none"
+              textContentType="oneTimeCode"
+              autoComplete="off"
             />
           </View>
 
@@ -222,6 +217,8 @@ const SignUp = () => {
               onChangeText={(value) => handleInputChange("password2", value)}
               secureTextEntry
               autoCapitalize="none"
+              textContentType="oneTimeCode"
+              autoComplete="off"
             />
           </View>
 
@@ -232,7 +229,7 @@ const SignUp = () => {
           )}
         </View>
 
-        <TouchableOpacity
+        <Pressable
           onPress={onSubmit}
           disabled={isFormIncomplete || isUploading}
           className={`rounded-xl p-4 items-center mt-6 mb-4 ${
@@ -242,15 +239,15 @@ const SignUp = () => {
           <Text className="text-white text-base font-semibold">
             {isUploading ? "Subiendo imagen..." : "Crear cuenta"}
           </Text>
-        </TouchableOpacity>
+        </Pressable>
 
         <View className="flex-row justify-center items-center">
           <Text className="text-gray-400 text-sm">¿Ya tienes una cuenta? </Text>
-          <TouchableOpacity onPress={() => router.push("/(auth)")}>
+          <Pressable onPress={() => router.push("/(auth)")}>
             <Text className="text-indigo-500 text-sm font-semibold">
               Iniciar sesión
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </Screen>
