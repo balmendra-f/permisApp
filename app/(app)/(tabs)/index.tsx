@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+
 import {
   View,
   Text,
   TouchableOpacity,
   FlatList,
   Alert,
+  Pressable,
 } from "react-native";
-import React from "react";
-import { View, Text, Pressable, FlatList } from "react-native";
+import React, { useState } from "react";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
