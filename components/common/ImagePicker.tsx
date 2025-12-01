@@ -1,5 +1,4 @@
 import {
-  TouchableOpacity,
   Text,
   View,
   Image,
@@ -18,7 +17,7 @@ const ImagePicker: FC<{
 }> = ({ imageUrl, isUploading, pickImage, setImageUrl }) => {
   return (
     <Fragment>
-      <TouchableOpacity
+      <Pressable
         onPress={pickImage}
         className="w-20 h-20 bg-gray-200 rounded-lg justify-center items-center mx-4 mb-6 mt-2 relative"
       >
@@ -44,7 +43,7 @@ const ImagePicker: FC<{
         ) : (
           <Ionicons name="camera" size={30} color="gray" />
         )}
-      </TouchableOpacity>
+      </Pressable>
     </Fragment>
   );
 };

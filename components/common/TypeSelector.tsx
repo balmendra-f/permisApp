@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { TouchableOpacity, View, Text } from "react-native";
+import { Pressable, View, Text } from "react-native";
 
 const TypeSelector = () => {
   const [type, setType] = useState<"expense" | "income">("income");
 
   return (
     <View className="flex-row m-4 bg-blue-300 rounded-xl overflow-hidden">
-      <TouchableOpacity
+      <Pressable
         className={`flex-1 items-center py-3 rounded-2xl ${
           type === "expense" ? "bg-[#6194F2]" : "bg-blue-300"
-        }`}
+        } active:opacity-70`}
         onPress={() => setType("expense")}
       >
         <Text
@@ -19,11 +19,11 @@ const TypeSelector = () => {
         >
           Gastos
         </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
+      </Pressable>
+      <Pressable
         className={`flex-1 items-center py-3 rounded-2xl ${
           type === "income" ? "bg-[#6194F2]" : "bg-blue-300"
-        }`}
+        } active:opacity-70`}
         onPress={() => setType("income")}
       >
         <Text
@@ -33,7 +33,7 @@ const TypeSelector = () => {
         >
           Ingresos
         </Text>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 };

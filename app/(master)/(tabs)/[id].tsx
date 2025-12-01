@@ -7,7 +7,7 @@ import {
   Text,
   SafeAreaView,
   ActivityIndicator,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -76,12 +76,12 @@ export default function UserDetail() {
     return (
       <SafeAreaView className="flex-1 bg-black justify-center items-center">
         <Text className="text-gray-400">Usuario no encontrado</Text>
-        <TouchableOpacity
+        <Pressable
           onPress={() => router.back()}
           className="mt-4 px-4 py-2 bg-blue-600 rounded-lg"
         >
           <Text className="text-white">Volver</Text>
-        </TouchableOpacity>
+        </Pressable>
       </SafeAreaView>
     );
   }
@@ -89,13 +89,13 @@ export default function UserDetail() {
   return (
     <SafeAreaView className="flex-1 bg-black">
       <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <TouchableOpacity
+        <Pressable
           onPress={() => router.back()}
-          className="flex-row items-center mb-6"
+          className="flex-row items-center mb-6 active:opacity-70"
         >
           <Ionicons name="arrow-back" size={22} color="#3B82F6" />
           <Text className="text-blue-500 ml-2">Volver</Text>
-        </TouchableOpacity>
+        </Pressable>
 
         {/* Información básica */}
         <View className="bg-gray-800 p-6 rounded-2xl shadow-md mb-4">

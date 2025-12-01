@@ -6,6 +6,8 @@ import {
   FlatList,
   Alert,
 } from "react-native";
+import React from "react";
+import { View, Text, Pressable, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -252,9 +254,10 @@ const PermissionsScreen = () => {
         </View>
 
         {/* Botón nueva solicitud - Mejorado */}
-        <TouchableOpacity
+        <Pressable
           className="bg-blue-600 p-5 rounded-2xl flex-row justify-center items-center mb-8 shadow-lg shadow-blue-600/30 active:bg-blue-700"
           onPress={() => router.push("/request/page")}
+          style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
         >
           <View className="bg-white/20 p-1 rounded-full">
             <Ionicons name="add" size={20} color="white" />
@@ -262,7 +265,7 @@ const PermissionsScreen = () => {
           <Text className="text-white text-lg font-semibold ml-3">
             Nueva Solicitud
           </Text>
-        </TouchableOpacity>
+        </Pressable>
 
         {/* Historial de solicitudes */}
         <View className="mb-4">

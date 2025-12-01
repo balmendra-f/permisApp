@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, Switch, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, Switch, Pressable } from "react-native";
 import Screen from "@/components/common/Screen";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase";
@@ -71,24 +71,23 @@ const Settings = () => {
           />
         </SettingsSection>
 
-        <TouchableOpacity
+        <Pressable
           onPress={logout}
           className="flex-row items-center justify-center bg-indigo-700 py-4 rounded-xl mt-2 mb-6 active:opacity-80"
         >
           <Text className="text-[#F1F5F9] text-base font-medium ml-2">
             Cerrar sesión
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       </ScrollView>
     </Screen>
   );
 };
 const SettingItem = ({ title, subtitle, onPress, rightElement }: any) => {
   return (
-    <TouchableOpacity
+    <Pressable
       className="flex-row items-center px-4 py-4 border-b border-neutral-700 active:opacity-70"
       onPress={onPress}
-      activeOpacity={0.7}
     >
       <View className="flex-1">
         <Text className="text-base font-medium text-[#F1F5F9] mb-1">
@@ -97,7 +96,7 @@ const SettingItem = ({ title, subtitle, onPress, rightElement }: any) => {
         {subtitle && <Text className="text-sm text-[#94A3B8]">{subtitle}</Text>}
       </View>
       {rightElement && <View className="ml-2">{rightElement}</View>}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import {
   View,
-  TouchableOpacity,
+  Pressable,
   Modal,
   KeyboardAvoidingView,
   Platform,
@@ -47,9 +47,12 @@ const CustomModal = ({
           <View style={styles.container}>
             <View style={styles.header}>
               <Text style={styles.title}>{title}</Text>
-              <TouchableOpacity onPress={onClose}>
+              <Pressable
+                onPress={onClose}
+                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+              >
                 <Ionicons name="close" size={24} color={colors.text} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
             <ScrollView
               style={styles.content}

@@ -5,7 +5,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   Alert,
   StyleSheet,
@@ -277,9 +277,12 @@ export default function NuevaSolicitudForm() {
         >
           <View className="px-6 pt-6 pb-6">
             <View className="flex-row items-center mb-4">
-              <TouchableOpacity className="mr-4" onPress={() => router.back()}>
+              <Pressable
+                className="mr-4 active:opacity-70"
+                onPress={() => router.back()}
+              >
                 <Ionicons name="arrow-back" size={24} color="#fff" />
-              </TouchableOpacity>
+              </Pressable>
               <View className="flex-1">
                 <Text className="text-3xl font-bold text-white">
                   Nueva Solicitud
@@ -310,13 +313,13 @@ export default function NuevaSolicitudForm() {
               <Text className="text-base font-semibold text-white mb-2">
                 Tipo de Permiso
               </Text>
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setModalVisible(true)}
-                className="flex-row items-center justify-between border border-neutral-600 rounded-lg px-4 py-3 bg-neutral-700"
+                className="flex-row items-center justify-between border border-neutral-600 rounded-lg px-4 py-3 bg-neutral-700 active:bg-neutral-600"
               >
                 <Text className="text-base text-white">{tipoPermiso}</Text>
                 <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             {/* Tipo de saldo */}
@@ -324,15 +327,15 @@ export default function NuevaSolicitudForm() {
               <Text className="text-base font-semibold text-white mb-2">
                 Tipo de saldo a descontar
               </Text>
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setSaldoModalVisible(true)}
-                className="flex-row items-center justify-between border border-neutral-600 rounded-lg px-4 py-3 bg-neutral-700"
+                className="flex-row items-center justify-between border border-neutral-600 rounded-lg px-4 py-3 bg-neutral-700 active:bg-neutral-600"
               >
                 <Text className="text-base text-white">
                   {opcionesSaldo.find((o) => o.value === tipoSaldo)?.label}
                 </Text>
                 <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             {/* Toggle Horas */}
@@ -458,16 +461,16 @@ export default function NuevaSolicitudForm() {
                         {uploadedFile.fileName}
                       </Text>
                     </View>
-                    <TouchableOpacity
+                    <Pressable
                       onPress={handleRemoveFile}
-                      className="ml-2"
+                      className="ml-2 active:opacity-70"
                     >
                       <Ionicons
                         name="close-circle"
                         size={24}
                         color="#989292ff"
                       />
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                   <Text className="text-xs text-green-500 mt-1">
                     ✓ Archivo subido correctamente
@@ -495,16 +498,16 @@ export default function NuevaSolicitudForm() {
                       Ningún archivo seleccionado
                     </Text>
                   </View>
-                  <TouchableOpacity
+                  <Pressable
                     onPress={handleFileUpload}
-                    className="border border-neutral-600 rounded-lg p-3 bg-neutral-700"
+                    className="border border-neutral-600 rounded-lg p-3 bg-neutral-700 active:bg-neutral-600"
                   >
                     <Ionicons
                       name="cloud-upload-outline"
                       size={24}
                       color="#9CA3AF"
                     />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               )}
 
@@ -515,18 +518,18 @@ export default function NuevaSolicitudForm() {
 
             {/* Botones */}
             <View className="flex-row gap-3 mt-4">
-              <TouchableOpacity
+              <Pressable
                 onPress={() => router.back()}
-                className="flex-1 border border-neutral-600 rounded-lg py-4 bg-neutral-700"
+                className="flex-1 border border-neutral-600 rounded-lg py-4 bg-neutral-700 active:bg-neutral-600"
                 disabled={uploading}
               >
                 <Text className="text-center text-base font-semibold text-white">
                   Cancelar
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </Pressable>
+              <Pressable
                 onPress={handleSubmit}
-                className="flex-1 rounded-lg py-4 bg-blue-600"
+                className="flex-1 rounded-lg py-4 bg-blue-600 active:bg-blue-700"
                 disabled={uploading}
                 style={{ opacity: uploading ? 0.5 : 1 }}
               >
@@ -537,7 +540,7 @@ export default function NuevaSolicitudForm() {
                     Enviar
                   </Text>
                 )}
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </ScrollView>
@@ -551,12 +554,13 @@ export default function NuevaSolicitudForm() {
       >
         <View style={styles.modalContent}>
           {tiposPermiso.map((tipo) => (
-            <TouchableOpacity
+            <Pressable
               key={tipo}
               onPress={() => handleSelectTipoPermiso(tipo)}
-              style={[
+              style={({ pressed }) => [
                 styles.optionItem,
                 tipoPermiso === tipo && styles.optionItemSelected,
+                { opacity: pressed ? 0.8 : 1 }
               ]}
             >
               <Text
@@ -574,7 +578,7 @@ export default function NuevaSolicitudForm() {
                   color={colors.primary}
                 />
               )}
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </CustomModal>
@@ -587,12 +591,13 @@ export default function NuevaSolicitudForm() {
       >
         <View style={styles.modalContent}>
           {opcionesSaldo.map((opt) => (
-            <TouchableOpacity
+            <Pressable
               key={opt.value}
               onPress={() => handleSelectTipoSaldo(opt.value)}
-              style={[
+              style={({ pressed }) => [
                 styles.optionItem,
                 tipoSaldo === opt.value && styles.optionItemSelected,
+                { opacity: pressed ? 0.8 : 1 }
               ]}
             >
               <Text
@@ -610,7 +615,7 @@ export default function NuevaSolicitudForm() {
                   color={colors.primary}
                 />
               )}
-            </TouchableOpacity>
+            </Pressable>
           ))}
         </View>
       </CustomModal>
@@ -622,9 +627,12 @@ export default function NuevaSolicitudForm() {
         title="Seleccionar tipo de archivo"
       >
         <View style={styles.modalContent}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => handleSelectUploadOption("document")}
-            style={styles.optionItem}
+            style={({ pressed }) => [
+              styles.optionItem,
+              { opacity: pressed ? 0.8 : 1 }
+            ]}
           >
             <View className="flex-row items-center flex-1">
               <Ionicons name="document-text" size={24} color="#60A5FA" />
@@ -636,11 +644,14 @@ export default function NuevaSolicitudForm() {
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
+          </Pressable>
 
-          <TouchableOpacity
+          <Pressable
             onPress={() => handleSelectUploadOption("image")}
-            style={styles.optionItem}
+            style={({ pressed }) => [
+              styles.optionItem,
+              { opacity: pressed ? 0.8 : 1 }
+            ]}
           >
             <View className="flex-row items-center flex-1">
               <Ionicons name="image" size={24} color="#60A5FA" />
@@ -652,7 +663,7 @@ export default function NuevaSolicitudForm() {
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </CustomModal>
     </Screen>
