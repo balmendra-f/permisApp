@@ -5,7 +5,7 @@ import {
   Text,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   StatusBar,
 } from "react-native";
@@ -45,9 +45,9 @@ export default function PanelMaster() {
               <Text className="text-gray-400 text-base mt-1">{user?.name}</Text>
             </View>
           </View>
-          <TouchableOpacity>
+          <Pressable>
             <MaterialIcons name="logout" size={24} color="#9CA3AF" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Contador */}
@@ -81,10 +81,10 @@ export default function PanelMaster() {
                   {u.email || "Sin correo"}
                 </Text>
 
-                <TouchableOpacity
+                <Pressable
                   className={`flex-row items-center justify-center gap-2 py-3 rounded border-2 border-yellow-700 bg-gray-900 ${
                     isProcessing ? "opacity-60" : ""
-                  }`}
+                  } active:bg-gray-800`}
                   onPress={() => toggleAdmin(u.id, u.isAdmin)}
                   disabled={isProcessing}
                 >
@@ -106,7 +106,7 @@ export default function PanelMaster() {
                       </Text>
                     </>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               </View>
             );
           })}
