@@ -5,7 +5,7 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
@@ -121,9 +121,9 @@ export default function HistorialSolicitudes() {
               </Text>
             </View>
           </View>
-          <TouchableOpacity>
+          <Pressable>
             <MaterialIcons name="filter-list" size={24} color="#9CA3AF" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Estadísticas */}
@@ -157,13 +157,13 @@ export default function HistorialSolicitudes() {
         <View className="flex-row px-5 gap-2 mb-5">
           {(["todas", "aprobadas", "rechazadas"] as FilterType[]).map(
             (filtro) => (
-              <TouchableOpacity
+              <Pressable
                 key={filtro}
                 className={`flex-1 py-2 px-4 rounded-lg border-2 items-center ${
                   filtroActivo === filtro
                     ? "border-blue-500 bg-blue-100/20"
                     : "border-transparent bg-gray-800"
-                }`}
+                } active:bg-gray-700`}
                 onPress={() => setFiltroActivo(filtro)}
               >
                 <Text
@@ -173,7 +173,7 @@ export default function HistorialSolicitudes() {
                 >
                   {filtro.charAt(0).toUpperCase() + filtro.slice(1)}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             )
           )}
         </View>

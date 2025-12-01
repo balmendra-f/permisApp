@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Button, Text, View, Platform, TouchableOpacity } from "react-native";
+import { Button, Text, View, Platform, Pressable } from "react-native";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
@@ -95,9 +95,9 @@ const DateTimePicker: FC<{
         />
       )}
 
-      <TouchableOpacity
-        activeOpacity={0.7}
+      <Pressable
         onPress={handlePress}
+        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
         className="flex items-center flex-1"
         disabled={disable}
       >
@@ -127,7 +127,7 @@ const DateTimePicker: FC<{
             accentColor="#1976D2"
           />
         )}
-      </TouchableOpacity>
+      </Pressable>
 
       {!disableButtons && mode === "date" && (
         <Button

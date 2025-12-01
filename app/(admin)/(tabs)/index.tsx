@@ -5,7 +5,7 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   SafeAreaView,
   StatusBar,
   Alert,
@@ -170,9 +170,9 @@ export default function PanelAdmin() {
               <Text className="text-gray-400 text-base mt-1">{user?.name}</Text>
             </View>
           </View>
-          <TouchableOpacity>
+          <Pressable>
             <MaterialIcons name="logout" size={24} color="#9CA3AF" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Indicador de número de solicitudes */}
@@ -245,10 +245,10 @@ export default function PanelAdmin() {
                   </View>
 
                   <View className="flex-row gap-3">
-                    <TouchableOpacity
+                    <Pressable
                       className={`flex-1 flex-row items-center justify-center gap-2 py-3 rounded border-2 border-red-700 bg-gray-900 ${
                         isProcessing ? "opacity-60" : ""
-                      }`}
+                      } active:bg-gray-800`}
                       onPress={() => handleRechazar(solicitud.id)}
                       disabled={isProcessing}
                     >
@@ -266,12 +266,12 @@ export default function PanelAdmin() {
                           </Text>
                         </>
                       )}
-                    </TouchableOpacity>
+                    </Pressable>
 
-                    <TouchableOpacity
+                    <Pressable
                       className={`flex-1 flex-row items-center justify-center gap-2 py-3 rounded bg-blue-600 ${
                         isProcessing ? "opacity-60" : ""
-                      }`}
+                      } active:bg-blue-700`}
                       onPress={() => handleAprobar(solicitud.id)}
                       disabled={isProcessing}
                     >
@@ -289,7 +289,7 @@ export default function PanelAdmin() {
                           </Text>
                         </>
                       )}
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 </View>
               );

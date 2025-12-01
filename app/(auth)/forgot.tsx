@@ -5,7 +5,7 @@ import {
   Text,
   Alert,
   Image,
-  TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { useScreen } from "../../providers/ScreenProvider";
@@ -88,24 +88,27 @@ const Forgot = () => {
           )}
         </View>
 
-        <TouchableOpacity
+        <Pressable
           onPress={onSubmit}
-          className="bg-indigo-700 rounded-xl p-4 items-center mb-4"
+          className="bg-indigo-700 rounded-xl p-4 items-center mb-4 active:opacity-80"
         >
           <Text className="text-white text-base font-semibold">
             Enviar enlace
           </Text>
-        </TouchableOpacity>
+        </Pressable>
 
         <View className="flex-row justify-center items-center">
           <Text className="text-gray-400 text-sm">
             ¿Recordaste tu contraseña?{" "}
           </Text>
-          <TouchableOpacity onPress={() => router.push("/(auth)")}>
+          <Pressable
+            onPress={() => router.push("/(auth)")}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
             <Text className="text-indigo-500 text-sm font-semibold">
               Iniciar sesión
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
     </Screen>

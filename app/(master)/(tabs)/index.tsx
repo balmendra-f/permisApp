@@ -5,7 +5,7 @@ import {
   Text,
   SafeAreaView,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   StatusBar,
 } from "react-native";
@@ -47,9 +47,9 @@ export default function PanelMaster() {
               <Text className="text-gray-400 text-base mt-1">{user?.name}</Text>
             </View>
           </View>
-          <TouchableOpacity>
+          <Pressable>
             <MaterialIcons name="logout" size={24} color="#9CA3AF" />
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Contador */}
@@ -77,9 +77,9 @@ export default function PanelMaster() {
                 className="bg-gray-800 p-5 rounded-2xl mb-4 shadow-md"
               >
                 {/* Área clickeable para ver detalles */}
-                <TouchableOpacity
-                  activeOpacity={0.7}
+                <Pressable
                   onPress={() => router.push(`/${u.id}`)}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                 >
                   <Text className="text-white text-lg font-bold mb-1">
                     {u.name || "Sin nombre"}
@@ -87,10 +87,10 @@ export default function PanelMaster() {
                   <Text className="text-gray-400 text-sm mb-3">
                     {u.email || "Sin correo"}
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
 
                 {/* Botón separado para toggle admin */}
-                <TouchableOpacity
+                <Pressable
                   className={`flex-row items-center justify-center gap-2 py-3 rounded border-2 border-yellow-700 bg-gray-900 ${
                     isProcessing ? "opacity-60" : ""
                   }`}
@@ -118,7 +118,7 @@ export default function PanelMaster() {
                       </Text>
                     </>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               </View>
             );
           })}
