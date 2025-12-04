@@ -11,7 +11,7 @@ export const cancelRequest = async (requestId: string) => {
     }
 
     const data = docSnap.data();
-    if (data.aproved !== null) {
+    if (data.status !== "pending") {
       throw new Error("No se puede cancelar una solicitud ya procesada.");
     }
 

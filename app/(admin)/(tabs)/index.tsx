@@ -24,7 +24,7 @@ interface Solicitud {
   motivo: string;
   fechaInicio: any;
   fechaFin: any;
-  aproved: boolean | null;
+  status: "pending" | "approved" | "rejected";
   createdAt: any;
   documento: any;
   username: string;
@@ -37,7 +37,7 @@ export default function PanelAdmin() {
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   const solicitudesPendientes = requests.filter(
-    (req: Solicitud) => req.aproved === null && req.section === section
+    (req: Solicitud) => req.status === "pending" && req.section === section
   );
 
   const formatDate = (dateObj: any) => {
@@ -76,7 +76,7 @@ export default function PanelAdmin() {
   const handleAprobar = async (id: string) => {
     try {
       setProcessingIds((prev) => new Set(prev).add(id));
-      await updateRequestById(id, { aproved: true, isPending: false });
+      await updateRequestById(id, { status: "approved", isPending: false });
       Alert.alert(
         "Solicitud Aprobada",
         "La solicitud ha sido aprobada exitosamente"
@@ -104,7 +104,7 @@ export default function PanelAdmin() {
           onPress: async () => {
             try {
               setProcessingIds((prev) => new Set(prev).add(id));
-              await updateRequestById(id, { aproved: false, isPending: false });
+              await updateRequestById(id, { status: "rejected", isPending: false });
               Alert.alert(
                 "Solicitud Rechazada",
                 "La solicitud ha sido rechazada"

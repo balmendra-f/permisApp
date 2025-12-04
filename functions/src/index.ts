@@ -12,14 +12,15 @@ export const onRequestApproved = onDocumentUpdated(
     const after = event.data?.after?.data();
     if (!before || !after) return;
 
-    // 🔍 Verificar el campo correcto: "aproved" (como está en tu BD)
-    const beforeApproval = before.aproved;
-    const afterApproval = after.aproved;
+    // 🔍 Verificar el campo correcto: "status"
+    const beforeStatus = before.status;
+    const afterStatus = after.status;
 
-    // Solo ejecutar cuando cambia de NO aprobado/null a true
+    // Solo ejecutar cuando cambia de "pending" o "rejected" a "approved"
+    // O anteriormente era null/false (por compatibilidad, aunque no debería ocurrir con los cambios actuales)
     const justApproved =
-      (beforeApproval === false || beforeApproval === null) &&
-      afterApproval === true;
+      (beforeStatus !== "approved") &&
+      afterStatus === "approved";
 
     if (!justApproved) return;
 

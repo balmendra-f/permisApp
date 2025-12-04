@@ -67,7 +67,7 @@ export default function NuevaSolicitudForm() {
       const unsubscribeRequests = getRequestsByUser(user.id, (data: any[]) => {
           const dates: Date[] = [];
           data.forEach(req => {
-              if (req.aproved === true) { // Only approved requests
+              if (req.status === "approved") { // Only approved requests
                   let start = req.fechaInicio?.toDate ? req.fechaInicio.toDate() : new Date(req.fechaInicio);
                   let end = req.fechaFin?.toDate ? req.fechaFin.toDate() : new Date(req.fechaFin);
 

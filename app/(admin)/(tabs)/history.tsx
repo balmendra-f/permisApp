@@ -22,7 +22,7 @@ interface Solicitud {
   fechaInicio: any;
   fechaFin: any;
   isPending: boolean;
-  aproved: boolean;
+  status: "pending" | "approved" | "rejected";
   createdAt: any;
   updatedAt?: any;
   documento: any;
@@ -35,13 +35,13 @@ export default function HistorialSolicitudes() {
   const [filtroActivo, setFiltroActivo] = useState<FilterType>("todas");
 
   const solicitudesProcesadas = requests.filter(
-    (req: Solicitud) => req.aproved === true || req.aproved === false
+    (req: Solicitud) => req.status === "approved" || req.status === "rejected"
   );
 
   const solicitudesFiltradas = solicitudesProcesadas.filter(
     (req: Solicitud) => {
-      if (filtroActivo === "aprobadas") return req.aproved === true;
-      if (filtroActivo === "rechazadas") return req.aproved === false;
+      if (filtroActivo === "aprobadas") return req.status === "approved";
+      if (filtroActivo === "rechazadas") return req.status === "rejected";
       return true;
     }
   );
@@ -87,10 +87,10 @@ export default function HistorialSolicitudes() {
   };
 
   const contadorAprobadas = solicitudesProcesadas.filter(
-    (req) => req.aproved
+    (req) => req.status === "approved"
   ).length;
   const contadorRechazadas = solicitudesProcesadas.filter(
-    (req) => !req.aproved
+    (req) => req.status === "rejected"
   ).length;
 
   if (loading) {
@@ -208,25 +208,35 @@ export default function HistorialSolicitudes() {
                   <View
                     className="flex-row items-center px-3 py-1 rounded-full gap-2"
                     style={{
-                      backgroundColor: solicitud.aproved
-                        ? "#10B98120"
-                        : "#EF444420",
+                      backgroundColor:
+                        solicitud.status === "approved"
+                          ? "#10B98120"
+                          : "#EF444420",
                     }}
                   >
                     <Ionicons
                       name={
-                        solicitud.aproved ? "checkmark-circle" : "close-circle"
+                        solicitud.status === "approved"
+                          ? "checkmark-circle"
+                          : "close-circle"
                       }
                       size={16}
-                      color={solicitud.aproved ? "#10B981" : "#EF4444"}
+                      color={
+                        solicitud.status === "approved" ? "#10B981" : "#EF4444"
+                      }
                     />
                     <Text
                       className="text-sm font-semibold"
                       style={{
-                        color: solicitud.aproved ? "#10B981" : "#EF4444",
+                        color:
+                          solicitud.status === "approved"
+                            ? "#10B981"
+                            : "#EF4444",
                       }}
                     >
-                      {solicitud.aproved ? "Aprobada" : "Rechazada"}
+                      {solicitud.status === "approved"
+                        ? "Aprobada"
+                        : "Rechazada"}
                     </Text>
                   </View>
                   {solicitud.updatedAt && (
