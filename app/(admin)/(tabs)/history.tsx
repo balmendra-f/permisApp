@@ -199,7 +199,7 @@ export default function HistorialSolicitudes() {
                 key={solicitud.id}
                 className="bg-gray-800 p-5 rounded-2xl mb-4 shadow-md"
               >
-                {/* Header con estado */}
+
                 <View className="flex-row justify-between items-center mb-3">
                   <View
                     className="flex-row items-center px-3 py-1 rounded-full gap-2"

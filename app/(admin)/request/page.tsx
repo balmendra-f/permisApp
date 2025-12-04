@@ -69,7 +69,7 @@ export default function NuevaSolicitudForm() {
 
   const calcularDias = (inicio: Date, fin: Date) => {
     const diffTime = Math.abs(fin.getTime() - inicio.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // incluye el día inicial
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   };
 
   const handleSubmit = async () => {
@@ -118,7 +118,7 @@ export default function NuevaSolicitudForm() {
         documento: documento || null,
         documentoNombre: uploadedFile?.fileName || null,
         username: user.name,
-        section: user.sectionBoss, // <-- aquí usamos sectionBoss
+        section: user.sectionBoss,
         diasSolicitados,
       };
 
@@ -224,7 +224,7 @@ export default function NuevaSolicitudForm() {
               </Text>
             </View>
 
-            {/* Tipo de Permiso */}
+
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Tipo de Permiso
@@ -238,7 +238,7 @@ export default function NuevaSolicitudForm() {
               </Pressable>
             </View>
 
-            {/* Tipo de saldo */}
+
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Tipo de saldo a descontar
@@ -254,7 +254,7 @@ export default function NuevaSolicitudForm() {
               </Pressable>
             </View>
 
-            {/* Fechas */}
+
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Fecha de Inicio
@@ -287,7 +287,7 @@ export default function NuevaSolicitudForm() {
               </View>
             </View>
 
-            {/* Motivo */}
+
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Motivo
@@ -305,7 +305,7 @@ export default function NuevaSolicitudForm() {
               />
             </View>
 
-            {/* Archivo */}
+
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Documento (Opcional)
@@ -382,7 +382,7 @@ export default function NuevaSolicitudForm() {
               </Text>
             </View>
 
-            {/* Botones */}
+
             <View className="flex-row gap-3 mt-4">
               <Pressable
                 onPress={() => router.back()}
@@ -412,7 +412,7 @@ export default function NuevaSolicitudForm() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modal tipo de permiso */}
+
       <CustomModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -449,7 +449,7 @@ export default function NuevaSolicitudForm() {
         </View>
       </CustomModal>
 
-      {/* Modal tipo de saldo */}
+
       <CustomModal
         visible={saldoModalVisible}
         onClose={() => setSaldoModalVisible(false)}
@@ -486,7 +486,7 @@ export default function NuevaSolicitudForm() {
         </View>
       </CustomModal>
 
-      {/* Modal subida */}
+
       <CustomModal
         visible={uploadModalVisible}
         onClose={() => setUploadModalVisible(false)}

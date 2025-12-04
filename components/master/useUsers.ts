@@ -18,7 +18,7 @@ export const useUsers = () => {
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    // 🔥 Listener en tiempo real
+
     const unsubscribe = onSnapshot(
       collection(db, "users"),
       (snapshot) => {

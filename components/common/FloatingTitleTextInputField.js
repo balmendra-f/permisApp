@@ -6,10 +6,10 @@ export class FloatingTitleTextInputField extends Component {
   static propTypes = {
     title: string.isRequired,
     keyboardType: string,
-    titleActiveSize: number, // to control size of title when field is active
-    titleInActiveSize: number, // to control size of title when field is inactive
-    titleActiveColor: string, // to control color of title when field is active
-    titleInactiveColor: string, // to control color of title when field is active
+    titleActiveSize: number,
+    titleInActiveSize: number,
+    titleActiveColor: string,
+    titleInactiveColor: string,
     textInputStyles: object,
     otherTextInputProps: object,
   };
@@ -20,8 +20,8 @@ export class FloatingTitleTextInputField extends Component {
     titleInActiveSize: 16,
     titleActiveColor: "gray",
     titleInactiveColor: "dimgrey",
-    textInputStyles: {},
-    otherTextInputAttributes: {},
+    textInputStyles: ,
+    otherTextInputAttributes: ,
   };
 
   constructor(props) {

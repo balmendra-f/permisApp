@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, TextInput, Text, Keyboard, Pressable } from "react-native";
+import { View, Text, Keyboard, Pressable, ScrollView } from "react-native";
 import { router } from "expo-router";
 import {
   createUserWithEmailAndPassword,
@@ -12,6 +12,8 @@ import { useScreen } from "@/providers/ScreenProvider";
 import Header from "@/components/common/Header";
 import Screen from "@/components/common/Screen";
 import useImageUpload from "@/hooks/useImageUpload";
+import Input from "@/components/common/Input";
+import Button from "@/components/common/Button";
 
 const SignUp = () => {
   const { imageUrl, isUploading } = useImageUpload();
@@ -25,7 +27,7 @@ const SignUp = () => {
     password2: "",
     country: countryCode,
     section: "",
-    sectionBoss: "", // Nuevo campo opcional
+    sectionBoss: "",
   });
 
   useEffect(() => {
@@ -111,7 +113,7 @@ const SignUp = () => {
         email: formData.email,
         country: formData.country,
         section: formData.section,
-        sectionBoss: formData.sectionBoss || null, // Guardar opcional
+        sectionBoss: formData.sectionBoss || null,
       });
 
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
@@ -138,7 +140,10 @@ const SignUp = () => {
   return (
     <Screen>
       <Header title="Crear cuenta" />
-      <View className="flex-1 p-6">
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, padding: 24 }}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text className="text-3xl font-bold text-white text-center mb-2">
           Crear cuenta
         </Text>
@@ -146,102 +151,73 @@ const SignUp = () => {
           Completa tus datos
         </Text>
 
-        <View className="space-y-4">
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Correo electrónico"
-              placeholderTextColor="#666"
-              value={formData.email}
-              onChangeText={(value) => handleInputChange("email", value)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
+        <View className="mb-4">
+          <Input
+            placeholder="Correo electrónico"
+            value={formData.email}
+            onChangeText={(value) => handleInputChange("email", value)}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Nombre completo"
-              placeholderTextColor="#666"
-              value={formData.name}
-              onChangeText={(value) => handleInputChange("name", value)}
-              autoCapitalize="words"
-            />
-          </View>
+          <Input
+            placeholder="Nombre completo"
+            value={formData.name}
+            onChangeText={(value) => handleInputChange("name", value)}
+            autoCapitalize="words"
+          />
 
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Sección (Solo números)"
-              placeholderTextColor="#666"
-              value={formData.section}
-              onChangeText={handleSectionChange}
-              keyboardType="numeric"
-              autoCapitalize="none"
-            />
-          </View>
+          <Input
+            placeholder="Sección (Solo números)"
+            value={formData.section}
+            onChangeText={handleSectionChange}
+            keyboardType="numeric"
+            autoCapitalize="none"
+          />
 
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Sección jefatura (opcional)"
-              placeholderTextColor="#666"
-              value={formData.sectionBoss}
-              onChangeText={handleSectionBossChange}
-              keyboardType="numeric"
-              autoCapitalize="none"
-            />
-          </View>
+          <Input
+            placeholder="Sección jefatura (opcional)"
+            value={formData.sectionBoss}
+            onChangeText={handleSectionBossChange}
+            keyboardType="numeric"
+            autoCapitalize="none"
+          />
 
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Contraseña"
-              placeholderTextColor="#666"
-              value={formData.password}
-              onChangeText={(value) => handleInputChange("password", value)}
-              secureTextEntry
-              autoCapitalize="none"
-              textContentType="oneTimeCode"
-              autoComplete="off"
-            />
-          </View>
+          <Input
+            placeholder="Contraseña"
+            value={formData.password}
+            onChangeText={(value) => handleInputChange("password", value)}
+            secureTextEntry
+            autoCapitalize="none"
+            textContentType="oneTimeCode"
+            autoComplete="off"
+          />
 
-          <View className="mt-4">
-            <TextInput
-              className="bg-neutral-800 rounded-xl p-4 text-white text-base"
-              placeholder="Confirmar contraseña"
-              placeholderTextColor="#666"
-              value={formData.password2}
-              onChangeText={(value) => handleInputChange("password2", value)}
-              secureTextEntry
-              autoCapitalize="none"
-              textContentType="oneTimeCode"
-              autoComplete="off"
-            />
-          </View>
+          <Input
+            placeholder="Confirmar contraseña"
+            value={formData.password2}
+            onChangeText={(value) => handleInputChange("password2", value)}
+            secureTextEntry
+            autoCapitalize="none"
+            textContentType="oneTimeCode"
+            autoComplete="off"
+          />
 
           {error && (
-            <Text className="text-red-500 text-sm text-center">
+            <Text className="text-red-500 text-sm text-center mt-2">
               {errorMessage}
             </Text>
           )}
         </View>
 
-        <Pressable
+        <Button
+          label={isUploading ? "Subiendo imagen..." : "Crear cuenta"}
           onPress={onSubmit}
           disabled={isFormIncomplete || isUploading}
-          className={`rounded-xl p-4 items-center mt-6 mb-4 ${
-            isFormIncomplete || isUploading ? "bg-gray-600" : "bg-indigo-700"
-          }`}
-        >
-          <Text className="text-white text-base font-semibold">
-            {isUploading ? "Subiendo imagen..." : "Crear cuenta"}
-          </Text>
-        </Pressable>
+          className="mt-2"
+        />
 
-        <View className="flex-row justify-center items-center">
+        <View className="flex-row justify-center items-center mt-4 mb-8">
           <Text className="text-gray-400 text-sm">¿Ya tienes una cuenta? </Text>
           <Pressable onPress={() => router.push("/(auth)")}>
             <Text className="text-indigo-500 text-sm font-semibold">
@@ -249,7 +225,7 @@ const SignUp = () => {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </Screen>
   );
 };

@@ -97,7 +97,7 @@ export default function UserDetail() {
           <Text className="text-blue-500 ml-2">Volver</Text>
         </Pressable>
 
-        {/* Información básica */}
+
         <View className="bg-gray-800 p-6 rounded-2xl shadow-md mb-4">
           <Text className="text-white text-2xl font-bold mb-4">
             {user.name || "Sin nombre"}
@@ -134,7 +134,7 @@ export default function UserDetail() {
           </View>
         </View>
 
-        {/* Roles y permisos */}
+
         <View className="bg-gray-800 p-6 rounded-2xl shadow-md mb-4">
           <Text className="text-white text-lg font-bold mb-3">
             Roles y Permisos
@@ -177,7 +177,7 @@ export default function UserDetail() {
           </View>
         </View>
 
-        {/* Vacaciones y días */}
+
         <View className="bg-gray-800 p-6 rounded-2xl shadow-md mb-4">
           <Text className="text-white text-lg font-bold mb-3">
             Vacaciones y Permisos
@@ -225,7 +225,7 @@ export default function UserDetail() {
             </View>
           </View>
 
-          {/* Barra de progreso de vacaciones */}
+
           <View className="mt-4 pt-4 border-t border-gray-700">
             <Text className="text-gray-400 text-sm mb-2">
               Vacaciones disponibles
@@ -250,7 +250,7 @@ export default function UserDetail() {
           </View>
         </View>
 
-        {/* ID del usuario */}
+
         <View className="bg-gray-800 p-4 rounded-2xl shadow-md">
           <Text className="text-gray-500 text-xs mb-1">ID de Usuario</Text>
           <Text className="text-gray-400 text-xs font-mono">{user.id}</Text>

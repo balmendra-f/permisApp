@@ -13,6 +13,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useUsers } from "@/components/master/useUsers";
 import { useRouter } from "expo-router";
 import Screen from "@/components/common/Screen";
+import MasterUserCard from "@/components/master/MasterUserCard";
 
 export default function PanelMaster() {
   const { user } = useAuth();
@@ -34,7 +35,6 @@ export default function PanelMaster() {
     <Screen className="flex-1 bg-black">
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <ScrollView className="flex-1">
-        {/* Header */}
         <View className="flex-row justify-between items-center p-5 bg-gray-800">
           <View className="flex-row items-center gap-3">
             <View className="w-15 h-15 rounded-lg bg-blue-600 justify-center items-center">
@@ -52,7 +52,6 @@ export default function PanelMaster() {
           </Pressable>
         </View>
 
-        {/* Contador */}
         <View className="bg-gray-800 m-5 p-6 rounded-2xl shadow-md">
           <Text className="text-white text-base mb-3">Usuarios Totales</Text>
           <Text className="text-blue-500 text-5xl font-bold">
@@ -60,7 +59,6 @@ export default function PanelMaster() {
           </Text>
         </View>
 
-        {/* Lista de usuarios */}
         <View className="px-5">
           <Text className="text-white text-2xl font-bold mb-1">
             Lista de Usuarios
@@ -69,59 +67,14 @@ export default function PanelMaster() {
             Dar o quitar permisos de administrador
           </Text>
 
-          {users.map((u) => {
-            const isProcessing = processingIds.has(u.id);
-            return (
-              <View
-                key={u.id}
-                className="bg-gray-800 p-5 rounded-2xl mb-4 shadow-md"
-              >
-                {/* Área clickeable para ver detalles */}
-                <Pressable
-                  onPress={() => router.push(`/${u.id}`)}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-                >
-                  <Text className="text-white text-lg font-bold mb-1">
-                    {u.name || "Sin nombre"}
-                  </Text>
-                  <Text className="text-gray-400 text-sm mb-3">
-                    {u.email || "Sin correo"}
-                  </Text>
-                </Pressable>
-
-                {/* Botón separado para toggle admin */}
-                <Pressable
-                  className={`flex-row items-center justify-center gap-2 py-3 rounded border-2 border-yellow-700 bg-gray-900 ${
-                    isProcessing ? "opacity-60" : ""
-                  }`}
-                  onPress={(e) => {
-                    e.stopPropagation(); // Prevenir propagación
-                    toggleAdmin(u.id, u.isAdmin);
-                  }}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <ActivityIndicator size="small" color="#FBBF24" />
-                  ) : (
-                    <>
-                      <Ionicons
-                        name="shield-outline"
-                        size={20}
-                        color={u.isAdmin ? "#FBBF24" : "#9CA3AF"}
-                      />
-                      <Text
-                        className={`text-base font-semibold ${
-                          u.isAdmin ? "text-yellow-400" : "text-gray-400"
-                        }`}
-                      >
-                        {u.isAdmin ? "Quitar Admin" : "Hacer Admin"}
-                      </Text>
-                    </>
-                  )}
-                </Pressable>
-              </View>
-            );
-          })}
+          {users.map((u) => (
+            <MasterUserCard
+              key={u.id}
+              user={u}
+              isProcessing={processingIds.has(u.id)}
+              onToggleAdmin={toggleAdmin}
+            />
+          ))}
         </View>
       </ScrollView>
     </Screen>

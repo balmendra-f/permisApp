@@ -15,6 +15,7 @@ import { useRequests } from "@/providers/RequestProvider";
 import { updateRequestById } from "@/api/request/updateById";
 import { useAuth } from "@/providers/AuthProvider";
 import Screen from "@/components/common/Screen";
+import AdminRequestCard from "@/components/admin/AdminRequestCard";
 
 interface Solicitud {
   id: string;
@@ -61,16 +62,6 @@ export default function PanelAdmin() {
     } catch {
       return "Fecha inválida";
     }
-  };
-
-  const getTipoColor = (tipo: string) => {
-    const colores: { [key: string]: string } = {
-      Vacaciones: "#1E88E5",
-      "Permiso Personal": "#9C27B0",
-      "Licencia Médica": "#43A047",
-      "Día Libre": "#FB8C00",
-    };
-    return colores[tipo] || "#757575";
   };
 
   const handleAprobar = async (id: string) => {
@@ -160,7 +151,6 @@ export default function PanelAdmin() {
     <Screen>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <ScrollView className="flex-1">
-        {/* Encabezado */}
         <View className="flex-row justify-between items-center p-5 bg-gray-800">
           <View className="flex-row items-center gap-3">
             <View className="w-15 h-15 rounded-lg bg-blue-600 justify-center items-center">
@@ -178,7 +168,6 @@ export default function PanelAdmin() {
           </Pressable>
         </View>
 
-        {/* Indicador de número de solicitudes */}
         <View className="bg-gray-800 m-5 p-6 rounded-2xl shadow-md">
           <Text className="text-white text-base mb-3">
             Solicitudes Pendientes
@@ -188,7 +177,6 @@ export default function PanelAdmin() {
           </Text>
         </View>
 
-        {/* Lista */}
         <View className="px-5 pt-0">
           <Text className="text-white text-2xl font-bold mb-1">
             Solicitudes por Aprobar
@@ -209,94 +197,16 @@ export default function PanelAdmin() {
               </Text>
             </View>
           ) : (
-            solicitudesPendientes.map((solicitud: Solicitud) => {
-              const isProcessing = processingIds.has(solicitud.id);
-              const badgeColor = getTipoColor(solicitud.tipoPermiso);
-
-              return (
-                <View
-                  key={solicitud.id}
-                  className="bg-gray-800 p-5 rounded-2xl mb-4 shadow-md"
-                >
-                  <Text className="text-white text-xl font-bold mb-3">
-                    Usuario: {solicitud.username || "Sin nombre"}
-                  </Text>
-
-                  <View
-                    className="self-start px-3 py-1 rounded mb-3"
-                    style={{ backgroundColor: badgeColor }}
-                  >
-                    <Text className="text-white text-sm font-semibold">
-                      {solicitud.tipoPermiso}
-                    </Text>
-                  </View>
-
-                  <Text className="text-gray-400 text-base mb-3">
-                    {solicitud.motivo}
-                  </Text>
-
-                  <View className="flex-row items-center gap-2 mb-5">
-                    <Ionicons
-                      name="calendar-outline"
-                      size={18}
-                      color="#757575"
-                    />
-                    <Text className="text-gray-400 text-sm">
-                      {formatDate(solicitud.fechaInicio)} —{" "}
-                      {formatDate(solicitud.fechaFin)}
-                    </Text>
-                  </View>
-
-                  <View className="flex-row gap-3">
-                    <Pressable
-                      className={`flex-1 flex-row items-center justify-center gap-2 py-3 rounded border-2 border-red-700 bg-gray-900 ${
-                        isProcessing ? "opacity-60" : ""
-                      } active:bg-gray-800`}
-                      onPress={() => handleRechazar(solicitud.id)}
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? (
-                        <ActivityIndicator size="small" color="#D32F2F" />
-                      ) : (
-                        <>
-                          <Ionicons
-                            name="close-circle-outline"
-                            size={20}
-                            color="#EF4444"
-                          />
-                          <Text className="text-red-500 text-base font-semibold">
-                            Rechazar
-                          </Text>
-                        </>
-                      )}
-                    </Pressable>
-
-                    <Pressable
-                      className={`flex-1 flex-row items-center justify-center gap-2 py-3 rounded bg-blue-600 ${
-                        isProcessing ? "opacity-60" : ""
-                      } active:bg-blue-700`}
-                      onPress={() => handleAprobar(solicitud.id)}
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? (
-                        <ActivityIndicator size="small" color="#FFF" />
-                      ) : (
-                        <>
-                          <Ionicons
-                            name="checkmark-circle-outline"
-                            size={20}
-                            color="#FFF"
-                          />
-                          <Text className="text-white text-base font-semibold">
-                            Aprobar
-                          </Text>
-                        </>
-                      )}
-                    </Pressable>
-                  </View>
-                </View>
-              );
-            })
+            solicitudesPendientes.map((solicitud: Solicitud) => (
+              <AdminRequestCard
+                key={solicitud.id}
+                solicitud={solicitud}
+                onApprove={handleAprobar}
+                onReject={handleRechazar}
+                isProcessing={processingIds.has(solicitud.id)}
+                formatDate={formatDate}
+              />
+            ))
           )}
         </View>
       </ScrollView>

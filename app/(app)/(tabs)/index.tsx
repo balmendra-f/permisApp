@@ -15,6 +15,9 @@ import { useRequests } from "@/providers/RequestProvider";
 import { cancelRequest } from "@/api/request/cancelRequest";
 import CustomModal from "@/components/common/Modal";
 import { useBoss } from "@/components/admin/hooks/useBoss";
+import StatCard from "@/components/common/StatCard";
+import RequestItem from "@/components/requests/RequestItem";
+import ChiefInfo from "@/components/chief/ChiefInfo";
 
 const PermissionsScreen = () => {
   const { user } = useAuth();
@@ -53,112 +56,6 @@ const PermissionsScreen = () => {
   const handleViewChief = async () => {
     setChiefModalVisible(true);
     await loadChief();
-  };
-
-  const StatCard = ({ count, label, color, icon }: any) => (
-    <View
-      className={`p-6 rounded-2xl ${color} w-[30%] shadow-lg shadow-black/50`}
-    >
-      <View className="items-center">
-        <View className="bg-white/20 p-2 rounded-full mb-2">
-          <Ionicons name={icon} size={20} color="white" />
-        </View>
-        <Text className="text-white font-semibold text-sm text-center">
-          {label}
-        </Text>
-        <Text className="text-white text-3xl font-bold mt-1">{count}</Text>
-      </View>
-    </View>
-  );
-
-  const renderItem = ({ item }: any) => {
-    const fechaInicio = item.fechaInicio?.toDate
-      ? item.fechaInicio.toDate()
-      : new Date(item.fechaInicio);
-
-    const fechaFin = item.fechaFin?.toDate
-      ? item.fechaFin.toDate()
-      : new Date(item.fechaFin);
-
-    const fechaFormateada = `${fechaInicio.getDate()} ${fechaInicio.toLocaleString(
-      "es-ES",
-      { month: "short" }
-    )} - ${fechaFin.getDate()} ${fechaFin.toLocaleString("es-ES", {
-      month: "short",
-    })}`;
-
-    let estadoConfig = {
-      text: "",
-      bgColor: "",
-      textColor: "",
-      icon: "",
-    };
-
-    if (item.status === "pending") {
-      estadoConfig = {
-        text: "Pendiente",
-        bgColor: "bg-amber-500/20",
-        textColor: "text-amber-400",
-        icon: "time-outline",
-      };
-    } else if (item.status === "rejected") {
-      estadoConfig = {
-        text: "Denegado",
-        bgColor: "bg-red-500/20",
-        textColor: "text-red-400",
-        icon: "close-circle-outline",
-      };
-    } else {
-      estadoConfig = {
-        text: "Aprobado",
-        bgColor: "bg-emerald-500/20",
-        textColor: "text-emerald-400",
-        icon: "checkmark-circle-outline",
-      };
-    }
-
-    return (
-      <View className="bg-neutral-800/80 p-5 rounded-2xl mt-3 border border-neutral-700/50 shadow-sm shadow-black/30">
-        <View className="flex-row justify-between items-start mb-3">
-          <View className="flex-1">
-            <Text className="text-lg font-semibold text-white mb-1">
-              {item.tipoPermiso}
-            </Text>
-            <Text className="text-gray-300 text-sm leading-5">
-              {item.motivo}
-            </Text>
-          </View>
-
-          <View
-            className={`px-3 py-2 rounded-full ${estadoConfig.bgColor} flex-row items-center ml-3`}
-          >
-            <Ionicons name={estadoConfig.icon} size={14} color="white" />
-            <Text
-              className={`${estadoConfig.textColor} text-xs font-medium ml-1`}
-            >
-              {estadoConfig.text}
-            </Text>
-          </View>
-        </View>
-
-        <View className="flex-row justify-between items-center pt-3 border-t border-neutral-700/50">
-          <View className="flex-row items-center">
-            <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
-            <Text className="text-gray-400 ml-2 text-sm">
-              {fechaFormateada}
-            </Text>
-          </View>
-
-          {item.status === "pending" && (
-            <TouchableOpacity onPress={() => handleCancelRequest(item.id)}>
-              <Text className="text-red-400 text-sm font-semibold">
-                Cancelar
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    );
   };
 
   return (
@@ -227,7 +124,9 @@ const PermissionsScreen = () => {
 
         <FlatList
           data={requests}
-          renderItem={renderItem}
+          renderItem={({ item }) => (
+            <RequestItem item={item} onCancel={handleCancelRequest} />
+          )}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
@@ -239,30 +138,7 @@ const PermissionsScreen = () => {
         onClose={() => setChiefModalVisible(false)}
         title="Mi Jefe de Sección"
       >
-        <View className="p-4 items-center">
-          {chief ? (
-            <>
-              <View className="w-20 h-20 bg-blue-500 rounded-full items-center justify-center mb-4">
-                <Text className="text-3xl text-white font-bold">
-                  {chief.name?.charAt(0)}
-                </Text>
-              </View>
-              <Text className="text-xl text-white font-bold mb-1">
-                {chief.name}
-              </Text>
-              <Text className="text-gray-400 mb-4">{chief.email}</Text>
-
-              <View className="flex-row items-center bg-neutral-800 px-4 py-2 rounded-lg">
-                <Ionicons name="briefcase-outline" size={16} color="#9CA3AF" />
-                <Text className="text-gray-300 ml-2">{user?.section}</Text>
-              </View>
-            </>
-          ) : (
-            <Text className="text-gray-400">
-              No se encontró información del jefe de sección.
-            </Text>
-          )}
-        </View>
+        <ChiefInfo chief={chief} userSection={user?.section} />
       </CustomModal>
     </Screen>
   );

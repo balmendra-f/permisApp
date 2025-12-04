@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   ScrollView,
   Alert,
@@ -13,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Switch,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -49,46 +49,51 @@ export default function NuevaSolicitudForm() {
   const userId = auth.currentUser?.uid;
   const section = user?.section;
 
-  const [userData, setUserData] = useState<User | null>(user);
+  const [userData, setUserData] = useState<any | null>(user);
   const [takenDates, setTakenDates] = useState<Date[]>([]);
 
   useEffect(() => {
-      if (!user) return;
+    if (!user) return;
 
-      const ref = doc(db, "users", user.id);
+    const ref = doc(db, "users", user.id);
 
-      const unsubscribe = onSnapshot(ref, (snap) => {
-        if (snap.exists()) {
-          setUserData(snap.data() as User);
+    const unsubscribe = onSnapshot(ref, (snap) => {
+      if (snap.exists()) {
+        setUserData(snap.data());
+      }
+    });
+
+    const unsubscribeRequests = getRequestsByUser(user.id, (data: any[]) => {
+      const dates: Date[] = [];
+      data.forEach((req) => {
+        if (req.status === "approved") {
+          let start = req.fechaInicio?.toDate
+            ? req.fechaInicio.toDate()
+            : new Date(req.fechaInicio);
+          let end = req.fechaFin?.toDate
+            ? req.fechaFin.toDate()
+            : new Date(req.fechaFin);
+
+          start.setHours(0, 0, 0, 0);
+          end.setHours(0, 0, 0, 0);
+
+          for (
+            let d = new Date(start);
+            d <= end;
+            d.setDate(d.getDate() + 1)
+          ) {
+            dates.push(new Date(d));
+          }
         }
       });
+      setTakenDates(dates);
+    });
 
-      // Fetch user requests to mark taken dates
-      const unsubscribeRequests = getRequestsByUser(user.id, (data: any[]) => {
-          const dates: Date[] = [];
-          data.forEach(req => {
-              if (req.status === "approved") { // Only approved requests
-                  let start = req.fechaInicio?.toDate ? req.fechaInicio.toDate() : new Date(req.fechaInicio);
-                  let end = req.fechaFin?.toDate ? req.fechaFin.toDate() : new Date(req.fechaFin);
-
-                  // Normalize
-                  start.setHours(0,0,0,0);
-                  end.setHours(0,0,0,0);
-
-                  // Add all dates in range
-                  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-                      dates.push(new Date(d));
-                  }
-              }
-          });
-          setTakenDates(dates);
-      });
-
-      return () => {
-          unsubscribe();
-          unsubscribeRequests();
-      };
-    }, [user]);
+    return () => {
+      unsubscribe();
+      unsubscribeRequests();
+    };
+  }, [user]);
 
   const [tipoPermiso, setTipoPermiso] = useState("Vacaciones");
   const [tipoSaldo, setTipoSaldo] = useState("vacationsInDays");
@@ -100,11 +105,11 @@ export default function NuevaSolicitudForm() {
   const [saldoModalVisible, setSaldoModalVisible] = useState(false);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
 
-  // Soporte para horas
   const [esPorHoras, setEsPorHoras] = useState(false);
   const [horaInicio, setHoraInicio] = useState<Date | null>(new Date());
-  const [horaFin, setHoraFin] = useState<Date | null>(new Date(new Date().setHours(new Date().getHours() + 1)));
-
+  const [horaFin, setHoraFin] = useState<Date | null>(
+    new Date(new Date().setHours(new Date().getHours() + 1))
+  );
 
   const {
     uploading,
@@ -121,12 +126,12 @@ export default function NuevaSolicitudForm() {
 
   const calcularDias = (inicio: Date, fin: Date) => {
     const diffTime = Math.abs(fin.getTime() - inicio.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // incluye el día inicial
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   };
 
   const calcularHoras = (inicio: Date, fin: Date) => {
-      const diffTime = Math.abs(fin.getTime() - inicio.getTime());
-      return Math.round((diffTime / (1000 * 60 * 60)) * 10) / 10;
+    const diffTime = Math.abs(fin.getTime() - inicio.getTime());
+    return Math.round((diffTime / (1000 * 60 * 60)) * 10) / 10;
   };
 
   const handleSubmit = async () => {
@@ -144,22 +149,21 @@ export default function NuevaSolicitudForm() {
     }
 
     if (esPorHoras && horaInicio && horaFin && horaInicio >= horaFin) {
-        Alert.alert(
-            "Error",
-            "La hora de inicio no puede ser mayor o igual a la hora de fin."
-        );
-        return;
+      Alert.alert(
+        "Error",
+        "La hora de inicio no puede ser mayor o igual a la hora de fin."
+      );
+      return;
     }
 
     let diasSolicitados = 0;
 
     if (esPorHoras && horaInicio && horaFin) {
-        const horas = calcularHoras(horaInicio, horaFin);
-        // Convertir horas a días (1 día = 8 horas para validación de saldo, pero se guarda el valor en el backend como sea necesario)
-        // Como el sistema actual descuenta diasSolicitados directamente, enviaremos la fraccion.
-        diasSolicitados = horas / 8;
+      const horas = calcularHoras(horaInicio, horaFin);
+
+      diasSolicitados = horas / 8;
     } else if (fechaFin) {
-        diasSolicitados = calcularDias(fechaInicio, fechaFin);
+      diasSolicitados = calcularDias(fechaInicio, fechaFin);
     }
 
     if (!userData) return;
@@ -170,14 +174,18 @@ export default function NuevaSolicitudForm() {
         : userData.administrativeDays;
 
     if (diasSolicitados <= 0) {
-        Alert.alert("Error", "La cantidad solicitada debe ser mayor a 0.");
-        return;
+      Alert.alert("Error", "La cantidad solicitada debe ser mayor a 0.");
+      return;
     }
 
     if (diasSolicitados > diasDisponibles) {
       Alert.alert(
         "Saldo insuficiente",
-        `Solicitas ${Number(diasSolicitados.toFixed(2))} día(s) pero solo tienes ${Number(diasDisponibles.toFixed(2))} día(s) disponible(s) en ${
+        `Solicitas ${Number(
+          diasSolicitados.toFixed(2)
+        )} día(s) pero solo tienes ${Number(
+          diasDisponibles.toFixed(2)
+        )} día(s) disponible(s) en ${
           tipoSaldo === "vacationsInDays" ? "vacaciones" : "administrativo"
         }.`
       );
@@ -194,7 +202,7 @@ export default function NuevaSolicitudForm() {
         tipoPermiso,
         tipoSaldo,
         fechaInicio,
-        fechaFin: esPorHoras ? fechaInicio : fechaFin, // Si es por horas, la fecha fin es el mismo dia
+        fechaFin: esPorHoras ? fechaInicio : fechaFin,
         horaInicio: esPorHoras ? horaInicio : null,
         horaFin: esPorHoras ? horaFin : null,
         esPorHoras,
@@ -300,7 +308,12 @@ export default function NuevaSolicitudForm() {
             </Text>
             <View className="mb-6">
               <Text className="text-base text-gray-300 mb-1">
-                Vacaciones: {userData ? (userData.vacationsInDays - userData.vacationUsedInDays).toFixed(2) : 0}{" "}
+                Vacaciones:{" "}
+                {userData
+                  ? (
+                      userData.vacationsInDays - userData.vacationUsedInDays
+                    ).toFixed(2)
+                  : 0}{" "}
                 días
               </Text>
               <Text className="text-base text-gray-300">
@@ -308,7 +321,6 @@ export default function NuevaSolicitudForm() {
               </Text>
             </View>
 
-            {/* Tipo de Permiso */}
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Tipo de Permiso
@@ -322,7 +334,6 @@ export default function NuevaSolicitudForm() {
               </Pressable>
             </View>
 
-            {/* Tipo de saldo */}
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Tipo de saldo a descontar
@@ -338,7 +349,6 @@ export default function NuevaSolicitudForm() {
               </Pressable>
             </View>
 
-            {/* Toggle Horas */}
             <View className="mb-6 flex-row items-center justify-between">
               <Text className="text-base font-semibold text-white">
                 Solicitar por horas
@@ -351,7 +361,6 @@ export default function NuevaSolicitudForm() {
               />
             </View>
 
-            {/* Fechas */}
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 {esPorHoras ? "Fecha" : "Fecha de Inicio"}
@@ -387,41 +396,40 @@ export default function NuevaSolicitudForm() {
                 </View>
               </View>
             ) : (
-                <View className="flex-row justify-between mb-6">
-                    <View className="flex-1 mr-2">
-                        <Text className="text-base font-semibold text-white mb-2">
-                            Hora Inicio
-                        </Text>
-                        <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
-                            <DateTimePicker
-                                mode="time"
-                                disableButtons
-                                onDateChange={(date) => setHoraInicio(date)}
-                                value={horaInicio}
-                                androidTextColor="text-white"
-                            />
-                            <Ionicons name="time-outline" size={20} color="#9CA3AF" />
-                        </View>
-                    </View>
-                    <View className="flex-1 ml-2">
-                        <Text className="text-base font-semibold text-white mb-2">
-                            Hora Fin
-                        </Text>
-                         <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
-                            <DateTimePicker
-                                mode="time"
-                                disableButtons
-                                onDateChange={(date) => setHoraFin(date)}
-                                value={horaFin}
-                                androidTextColor="text-white"
-                            />
-                            <Ionicons name="time-outline" size={20} color="#9CA3AF" />
-                        </View>
-                    </View>
+              <View className="flex-row justify-between mb-6">
+                <View className="flex-1 mr-2">
+                  <Text className="text-base font-semibold text-white mb-2">
+                    Hora Inicio
+                  </Text>
+                  <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
+                    <DateTimePicker
+                      mode="time"
+                      disableButtons
+                      onDateChange={(date) => setHoraInicio(date)}
+                      value={horaInicio}
+                      androidTextColor="text-white"
+                    />
+                    <Ionicons name="time-outline" size={20} color="#9CA3AF" />
+                  </View>
                 </View>
+                <View className="flex-1 ml-2">
+                  <Text className="text-base font-semibold text-white mb-2">
+                    Hora Fin
+                  </Text>
+                  <View className="flex-row items-center border border-neutral-600 rounded-lg px-4 bg-neutral-700">
+                    <DateTimePicker
+                      mode="time"
+                      disableButtons
+                      onDateChange={(date) => setHoraFin(date)}
+                      value={horaFin}
+                      androidTextColor="text-white"
+                    />
+                    <Ionicons name="time-outline" size={20} color="#9CA3AF" />
+                  </View>
+                </View>
+              </View>
             )}
 
-            {/* Motivo */}
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Motivo
@@ -439,7 +447,6 @@ export default function NuevaSolicitudForm() {
               />
             </View>
 
-            {/* Archivo */}
             <View className="mb-6">
               <Text className="text-base font-semibold text-white mb-2">
                 Documento (Opcional)
@@ -516,7 +523,6 @@ export default function NuevaSolicitudForm() {
               </Text>
             </View>
 
-            {/* Botones */}
             <View className="flex-row gap-3 mt-4">
               <Pressable
                 onPress={() => router.back()}
@@ -546,7 +552,6 @@ export default function NuevaSolicitudForm() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modal tipo de permiso */}
       <CustomModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -560,7 +565,7 @@ export default function NuevaSolicitudForm() {
               style={({ pressed }) => [
                 styles.optionItem,
                 tipoPermiso === tipo && styles.optionItemSelected,
-                { opacity: pressed ? 0.8 : 1 }
+                { opacity: pressed ? 0.8 : 1 },
               ]}
             >
               <Text
@@ -583,7 +588,6 @@ export default function NuevaSolicitudForm() {
         </View>
       </CustomModal>
 
-      {/* Modal tipo de saldo */}
       <CustomModal
         visible={saldoModalVisible}
         onClose={() => setSaldoModalVisible(false)}
@@ -597,7 +601,7 @@ export default function NuevaSolicitudForm() {
               style={({ pressed }) => [
                 styles.optionItem,
                 tipoSaldo === opt.value && styles.optionItemSelected,
-                { opacity: pressed ? 0.8 : 1 }
+                { opacity: pressed ? 0.8 : 1 },
               ]}
             >
               <Text
@@ -620,7 +624,6 @@ export default function NuevaSolicitudForm() {
         </View>
       </CustomModal>
 
-      {/* Modal subida */}
       <CustomModal
         visible={uploadModalVisible}
         onClose={() => setUploadModalVisible(false)}
@@ -631,7 +634,7 @@ export default function NuevaSolicitudForm() {
             onPress={() => handleSelectUploadOption("document")}
             style={({ pressed }) => [
               styles.optionItem,
-              { opacity: pressed ? 0.8 : 1 }
+              { opacity: pressed ? 0.8 : 1 },
             ]}
           >
             <View className="flex-row items-center flex-1">
@@ -650,7 +653,7 @@ export default function NuevaSolicitudForm() {
             onPress={() => handleSelectUploadOption("image")}
             style={({ pressed }) => [
               styles.optionItem,
-              { opacity: pressed ? 0.8 : 1 }
+              { opacity: pressed ? 0.8 : 1 },
             ]}
           >
             <View className="flex-row items-center flex-1">

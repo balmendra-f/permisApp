@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
-import * as ImagePicker from "expo-image-picker"; // Asegúrate de que esta importación esté así
+import * as ImagePicker from "expo-image-picker";
 import {
   getStorage,
   ref,
@@ -38,7 +38,7 @@ export const useFileUpload = (
   const [progress, setProgress] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<UploadResult | null>(null);
 
-  // Función para seleccionar documento
+
   const pickDocument = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -65,10 +65,10 @@ export const useFileUpload = (
     }
   };
 
-  // Función para seleccionar imagen
+
   const pickImage = async () => {
     try {
-      // Solicitar permisos
+
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -81,19 +81,19 @@ export const useFileUpload = (
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        //
-        // AQUÍ ESTÁ LA CORRECCIÓN:
-        //
+
+
+
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        //
-        //
+
+
         allowsEditing: true,
         quality: 0.8,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const image = result.assets[0];
-        // Es mejor usar el nombre de archivo original si está disponible, o crear uno único
+
         const uriParts = image.uri.split("/");
         const originalFileName = uriParts[uriParts.length - 1];
         const fileName =
@@ -106,14 +106,14 @@ export const useFileUpload = (
     }
   };
 
-  // Función principal para subir archivo a Firebase
+
   const uploadFile = async (
     uri: string,
     fileName: string,
     fileType: string
   ): Promise<UploadResult | null> => {
     try {
-      // Verificar autenticación
+
       const auth = getAuth();
       if (!auth.currentUser) {
         Alert.alert("Error", "Debes iniciar sesión para subir archivos");
@@ -123,11 +123,11 @@ export const useFileUpload = (
       setUploading(true);
       setProgress(0);
 
-      // Obtener el blob del archivo
+
       const response = await fetch(uri);
       const blob = await response.blob();
 
-      // Crear referencia en Firebase Storage
+
       const storage = getStorage();
       const timestamp = Date.now();
       const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
@@ -136,7 +136,7 @@ export const useFileUpload = (
         `${storagePath}/${timestamp}_${sanitizedFileName}`
       );
 
-      // Crear tarea de subida con progreso
+
       const uploadTask = uploadBytesResumable(storageRef, blob, {
         contentType: fileType,
       });
@@ -145,13 +145,13 @@ export const useFileUpload = (
         uploadTask.on(
           "state_changed",
           (snapshot) => {
-            // Actualizar progreso
+
             const progressPercent =
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             setProgress(Math.round(progressPercent));
           },
           (error) => {
-            // Manejar errores
+
             console.error("Upload error:", error);
             setUploading(false);
             Alert.alert(
@@ -161,7 +161,7 @@ export const useFileUpload = (
             reject(error);
           },
           async () => {
-            // Subida completada exitosamente
+
             try {
               const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
@@ -192,7 +192,7 @@ export const useFileUpload = (
     }
   };
 
-  // Función para resetear el estado
+
   const resetUpload = () => {
     setUploading(false);
     setProgress(0);

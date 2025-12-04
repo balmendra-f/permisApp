@@ -1,18 +1,12 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  Image,
-  Keyboard,
-  Alert,
-} from "react-native";
+import { View, Text, Pressable, Image, Keyboard, Alert } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useScreen } from "@/providers/ScreenProvider";
 import { auth } from "@/firebase";
 import Screen from "@/components/common/Screen";
+import Input from "@/components/common/Input";
+import Button from "@/components/common/Button";
 
 export default function LoginScreen() {
   const { setIsLoading } = useScreen();
@@ -75,23 +69,20 @@ export default function LoginScreen() {
         </Text>
 
         <View className="mb-6">
-          <TextInput
-            className="bg-neutral-800 rounded-xl p-4 mb-4 text-white text-base"
+          <Input
             placeholder="Correo electrónico"
-            placeholderTextColor="#666"
             keyboardType="email-address"
             value={formData.email}
             onChangeText={(value) => handleInputChange("email", value)}
             autoCapitalize="none"
           />
-          <TextInput
-            className="bg-neutral-800 rounded-xl p-4 mb-2 text-white text-base"
+          <Input
             placeholder="Contraseña"
-            placeholderTextColor="#666"
             value={formData.password}
             onChangeText={(value) => handleInputChange("password", value)}
             autoCapitalize="none"
             secureTextEntry={true}
+            className="mb-2"
           />
           <Pressable onPress={goToForgot} className="self-end">
             <Text className="text-gray-400 text-sm">
@@ -100,14 +91,7 @@ export default function LoginScreen() {
           </Pressable>
         </View>
 
-        <Pressable
-          onPress={onSubmit}
-          className="bg-indigo-700 rounded-xl p-4 items-center mb-4"
-        >
-          <Text className="text-white text-base font-semibold">
-            Iniciar sesión
-          </Text>
-        </Pressable>
+        <Button label="Iniciar sesión" onPress={onSubmit} />
 
         <View className="flex-row justify-center items-center">
           <Text className="text-gray-400 text-sm">¿No tienes una cuenta? </Text>
