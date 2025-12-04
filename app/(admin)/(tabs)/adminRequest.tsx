@@ -1,19 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, FlatList } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "@/firebase";
-
-const getRequestsByUser = (userId: string, callback: (data: any[]) => void) => {
-  const q = query(collection(db, "solicitudes"), where("userId", "==", userId));
-  return onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    callback(data);
-  });
-};
+import { listenRequestsByUser } from "@/api/request/requestsService";
+import Screen from "@/components/common/Screen";
 
 const PermissionsScreen = () => {
   const { user } = useAuth();
@@ -21,10 +12,7 @@ const PermissionsScreen = () => {
   const [requests, setRequests] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!user?.id) return;
-
-    const unsubscribe = getRequestsByUser(user.id, setRequests);
-
+    const unsubscribe = listenRequestsByUser(user.id, setRequests);
     return () => unsubscribe();
   }, [user?.id]);
 
@@ -133,9 +121,8 @@ const PermissionsScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-900">
+    <Screen>
       <View className="p-6 flex-1">
-        {/* Header */}
         <View className="flex-row justify-between items-start mb-8">
           <View>
             <Text className="text-3xl font-bold text-white mb-1">
@@ -198,7 +185,7 @@ const PermissionsScreen = () => {
           showsVerticalScrollIndicator={false}
         />
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 };
 

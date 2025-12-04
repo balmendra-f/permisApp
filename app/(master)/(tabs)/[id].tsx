@@ -5,13 +5,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   View,
   Text,
-  SafeAreaView,
   ActivityIndicator,
   Pressable,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import getUserById from "@/api/users/getUserById";
+import Screen from "@/components/common/Screen";
 
 interface User {
   id: string;
@@ -65,16 +65,16 @@ export default function UserDetail() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-black justify-center items-center">
+      <Screen>
         <ActivityIndicator size="large" color="#3B82F6" />
         <Text className="text-gray-400 mt-3">Cargando usuario...</Text>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   if (!user) {
     return (
-      <SafeAreaView className="flex-1 bg-black justify-center items-center">
+      <Screen>
         <Text className="text-gray-400">Usuario no encontrado</Text>
         <Pressable
           onPress={() => router.back()}
@@ -82,12 +82,12 @@ export default function UserDetail() {
         >
           <Text className="text-white">Volver</Text>
         </Pressable>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <Screen >
       <ScrollView contentContainerStyle={{ padding: 20 }}>
         <Pressable
           onPress={() => router.back()}
@@ -102,7 +102,7 @@ export default function UserDetail() {
           <Text className="text-white text-2xl font-bold mb-4">
             {user.name || "Sin nombre"}
           </Text>
-          
+
           <View className="space-y-3">
             <View className="flex-row items-center">
               <Ionicons name="mail" size={18} color="#9CA3AF" />
@@ -139,7 +139,7 @@ export default function UserDetail() {
           <Text className="text-white text-lg font-bold mb-3">
             Roles y Permisos
           </Text>
-          
+
           <View className="space-y-2">
             <View className="flex-row items-center">
               <Ionicons
@@ -149,7 +149,9 @@ export default function UserDetail() {
               />
               <Text
                 className={`ml-3 text-base ${
-                  user.isMaster ? "text-amber-500 font-semibold" : "text-gray-400"
+                  user.isMaster
+                    ? "text-amber-500 font-semibold"
+                    : "text-gray-400"
                 }`}
               >
                 {user.isMaster ? "✓ Cuenta Master" : "Usuario regular"}
@@ -167,7 +169,9 @@ export default function UserDetail() {
                   user.isAdmin ? "text-blue-500 font-semibold" : "text-gray-400"
                 }`}
               >
-                {user.isAdmin ? "✓ Administrador" : "Sin permisos administrativos"}
+                {user.isAdmin
+                  ? "✓ Administrador"
+                  : "Sin permisos administrativos"}
               </Text>
             </View>
           </View>
@@ -178,7 +182,7 @@ export default function UserDetail() {
           <Text className="text-white text-lg font-bold mb-3">
             Vacaciones y Permisos
           </Text>
-          
+
           <View className="space-y-3">
             <View className="flex-row justify-between items-center">
               <View className="flex-row items-center">
@@ -231,8 +235,9 @@ export default function UserDetail() {
                 className="h-full bg-green-500"
                 style={{
                   width: `${
-                    ((user.vacationsInDays ?? 0) - (user.vacationUsedInDays ?? 0)) /
-                    (user.vacationsInDays || 1) *
+                    (((user.vacationsInDays ?? 0) -
+                      (user.vacationUsedInDays ?? 0)) /
+                      (user.vacationsInDays || 1)) *
                     100
                   }%`,
                 }}
@@ -251,6 +256,6 @@ export default function UserDetail() {
           <Text className="text-gray-400 text-xs font-mono">{user.id}</Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }

@@ -6,7 +6,6 @@ import {
   Text,
   ScrollView,
   Pressable,
-  SafeAreaView,
   StatusBar,
   Alert,
   ActivityIndicator,
@@ -15,6 +14,7 @@ import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRequests } from "@/providers/RequestProvider";
 import { updateRequestById } from "@/api/request/updateById";
 import { useAuth } from "@/providers/AuthProvider";
+import Screen from "@/components/common/Screen";
 
 interface Solicitud {
   id: string;
@@ -104,7 +104,10 @@ export default function PanelAdmin() {
           onPress: async () => {
             try {
               setProcessingIds((prev) => new Set(prev).add(id));
-              await updateRequestById(id, { status: "rejected", isPending: false });
+              await updateRequestById(id, {
+                status: "rejected",
+                isPending: false,
+              });
               Alert.alert(
                 "Solicitud Rechazada",
                 "La solicitud ha sido rechazada"
@@ -129,32 +132,32 @@ export default function PanelAdmin() {
 
   if (!section) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <Screen>
         <View className="flex-1 justify-center items-center gap-4">
           <Ionicons name="alert-circle-outline" size={48} color="#EF4444" />
           <Text className="text-gray-400 text-base">
             Tu usuario no tiene una sección asignada
           </Text>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <Screen>
         <View className="flex-1 justify-center items-center gap-4">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="text-gray-400 text-base">
             Cargando solicitudes...
           </Text>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <Screen>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <ScrollView className="flex-1">
         {/* Encabezado */}
@@ -297,6 +300,6 @@ export default function PanelAdmin() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }

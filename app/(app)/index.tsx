@@ -3,7 +3,6 @@
 import {
   View,
   Text,
-  SafeAreaView,
   ScrollView,
   Pressable,
   ActivityIndicator,
@@ -12,6 +11,7 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { useUsers } from "@/components/master/useUsers";
+import Screen from "@/components/common/Screen";
 
 export default function PanelMaster() {
   const { user } = useAuth();
@@ -19,20 +19,19 @@ export default function PanelMaster() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <Screen className="flex-1 bg-black">
         <View className="flex-1 justify-center items-center gap-4">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="text-gray-400 text-base">Cargando usuarios...</Text>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <Screen>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <ScrollView className="flex-1">
-        {/* Header */}
         <View className="flex-row justify-between items-center p-5 bg-gray-800">
           <View className="flex-row items-center gap-3">
             <View className="w-15 h-15 rounded-lg bg-blue-600 justify-center items-center">
@@ -50,7 +49,6 @@ export default function PanelMaster() {
           </Pressable>
         </View>
 
-        {/* Contador */}
         <View className="bg-gray-800 m-5 p-6 rounded-2xl shadow-md">
           <Text className="text-white text-base mb-3">Usuarios Totales</Text>
           <Text className="text-blue-500 text-5xl font-bold">
@@ -58,7 +56,6 @@ export default function PanelMaster() {
           </Text>
         </View>
 
-        {/* Lista de usuarios */}
         <View className="px-5">
           <Text className="text-white text-2xl font-bold mb-1">
             Lista de Usuarios
@@ -112,6 +109,6 @@ export default function PanelMaster() {
           })}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }

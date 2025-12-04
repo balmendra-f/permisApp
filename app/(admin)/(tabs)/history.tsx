@@ -6,12 +6,12 @@ import {
   Text,
   ScrollView,
   Pressable,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
 } from "react-native";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRequests } from "@/providers/RequestProvider";
+import Screen from "@/components/common/Screen";
 
 interface Solicitud {
   id: string;
@@ -95,20 +95,19 @@ export default function HistorialSolicitudes() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <Screen>
         <View className="flex-1 justify-center items-center gap-4">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="text-gray-400 text-base">Cargando historial...</Text>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <Screen>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <ScrollView className="flex-1">
-        {/* Header */}
         <View className="flex-row justify-between items-center p-5 bg-gray-800">
           <View className="flex-row items-center gap-3">
             <View className="w-15 h-15 rounded-lg bg-blue-600 justify-center items-center">
@@ -126,7 +125,6 @@ export default function HistorialSolicitudes() {
           </Pressable>
         </View>
 
-        {/* Estadísticas */}
         <View className="flex-row px-5 py-4 gap-3">
           <View className="flex-1 bg-gray-800 p-4 rounded-xl items-center gap-2">
             <Ionicons name="checkmark-circle" size={32} color="#10B981" />
@@ -153,7 +151,6 @@ export default function HistorialSolicitudes() {
           </View>
         </View>
 
-        {/* Filtros */}
         <View className="flex-row px-5 gap-2 mb-5">
           {(["todas", "aprobadas", "rechazadas"] as FilterType[]).map(
             (filtro) => (
@@ -178,7 +175,6 @@ export default function HistorialSolicitudes() {
           )}
         </View>
 
-        {/* Lista de Solicitudes */}
         <View className="px-5 pt-0">
           <Text className="text-gray-400 text-sm mb-4">
             {solicitudesOrdenadas.length} solicitud(es)
@@ -246,12 +242,10 @@ export default function HistorialSolicitudes() {
                   )}
                 </View>
 
-                {/* Información del usuario */}
                 <Text className="text-white text-lg font-bold mb-3">
                   {solicitud.username || "Sin nombre"}
                 </Text>
 
-                {/* Badge de tipo */}
                 <View
                   className="self-start px-3 py-1 rounded mb-3"
                   style={{
@@ -263,12 +257,10 @@ export default function HistorialSolicitudes() {
                   </Text>
                 </View>
 
-                {/* Descripción */}
                 <Text className="text-gray-400 text-base mb-3">
                   {solicitud.motivo}
                 </Text>
 
-                {/* Fechas */}
                 <View className="flex-row items-center gap-2 mb-2">
                   <Ionicons name="calendar-outline" size={18} color="#757575" />
                   <Text className="text-gray-400 text-sm">
@@ -277,7 +269,6 @@ export default function HistorialSolicitudes() {
                   </Text>
                 </View>
 
-                {/* Fecha de creación */}
                 <View className="flex-row items-center gap-1">
                   <Ionicons name="time-outline" size={14} color="#6B7280" />
                   <Text className="text-gray-400 text-xs">
@@ -289,6 +280,6 @@ export default function HistorialSolicitudes() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }

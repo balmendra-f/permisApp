@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import * as Localization from "expo-localization";
 
-// Mapa de locales de date-fns soportados
 const supportedLocales: Record<string, Locale> = { es, en: enUS };
 
 const getLocale = (): Locale => {
@@ -28,7 +27,7 @@ const DateTimePicker: FC<{
   value: Date | undefined | null;
   androidTextColor?: string;
   customDateFormat?: string;
-  markedDates?: Date[]; // Fechas a deshabilitar o marcar
+  markedDates?: Date[]; 
 }> = ({
   disable,
   mode,
@@ -45,13 +44,11 @@ const DateTimePicker: FC<{
   const [selectedDate, setSelectedDate] = useState<Date>(value || new Date());
 
   const onChange = (_: any, date?: Date) => {
-    // En Android, el picker se cierra automáticamente
     if (Platform.OS === "android") {
       setShow(false);
       setExternalOpen?.(false);
     }
 
-    // Si se seleccionó una fecha
     if (date) {
       setSelectedDate(date);
       onDateChange?.(date);
@@ -87,7 +84,6 @@ const DateTimePicker: FC<{
     }
   };
 
-  // Verificar si la fecha seleccionada está marcada (ocupada)
   const isMarked = markedDates.some(d =>
       d.getDate() === selectedDate.getDate() &&
       d.getMonth() === selectedDate.getMonth() &&
@@ -154,7 +150,7 @@ const DateTimePicker: FC<{
 
 const getDateFormat = (mode: string) => {
   if (mode === "date") {
-    return "d MMMM yyyy"; // Corregido: era "yYYY"
+    return "d MMMM yyyy"; 
   } else if (mode === "time") {
     return "HH:mm";
   } else {

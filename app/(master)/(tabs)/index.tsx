@@ -3,7 +3,6 @@
 import {
   View,
   Text,
-  SafeAreaView,
   ScrollView,
   Pressable,
   ActivityIndicator,
@@ -13,6 +12,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "@/providers/AuthProvider";
 import { useUsers } from "@/components/master/useUsers";
 import { useRouter } from "expo-router";
+import Screen from "@/components/common/Screen";
 
 export default function PanelMaster() {
   const { user } = useAuth();
@@ -21,17 +21,17 @@ export default function PanelMaster() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-black">
+      <Screen className="flex-1 bg-black">
         <View className="flex-1 justify-center items-center gap-4">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="text-gray-400 text-base">Cargando usuarios...</Text>
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black">
+    <Screen className="flex-1 bg-black">
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       <ScrollView className="flex-1">
         {/* Header */}
@@ -124,6 +124,6 @@ export default function PanelMaster() {
           })}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }

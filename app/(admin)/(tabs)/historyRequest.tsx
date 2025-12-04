@@ -1,7 +1,7 @@
 import { useAuth } from "@/providers/AuthProvider";
 import React, { useEffect, useState } from "react";
 import { View, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import Screen from "@/components/common/Screen";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,11 +11,7 @@ const LeaveBalanceScreen = () => {
   const [userData, setUserData] = useState<User | null>(user);
 
   useEffect(() => {
-    if (!user) return;
-
     const ref = doc(db, "users", user.id);
-
-    // 🔄 escuchar en tiempo real cambios del usuario
     const unsubscribe = onSnapshot(ref, (snap) => {
       if (snap.exists()) {
         setUserData(snap.data() as User);
@@ -113,7 +109,6 @@ const LeaveBalanceScreen = () => {
               </View>
             </View>
 
-            {/* Barra de progreso */}
             <View className="bg-neutral-700 rounded-full h-2 mt-2">
               <View
                 className={`h-2 rounded-full ${config.bg}`}
@@ -139,9 +134,8 @@ const LeaveBalanceScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-900">
+    <Screen>
       <View className="p-6">
-        {/* Header */}
         <View className="mb-8">
           <Text className="text-3xl font-bold text-white mb-2">
             Balance de Días
@@ -151,7 +145,6 @@ const LeaveBalanceScreen = () => {
           </Text>
         </View>
 
-        {/* Vacaciones con progreso */}
         <StatCard
           title="Vacaciones"
           value={`${leaveData.vacations.total} días`}
@@ -164,7 +157,6 @@ const LeaveBalanceScreen = () => {
           }}
         />
 
-        {/* Días administrativos */}
         <StatCard
           title="Días Administrativos"
           value={leaveData.adminDays}
@@ -173,7 +165,6 @@ const LeaveBalanceScreen = () => {
           color="emerald"
         />
 
-        {/* Devoluciones de tiempo */}
         <StatCard
           title="Devoluciones de Tiempo"
           value={leaveData.timeReturns}
@@ -182,7 +173,6 @@ const LeaveBalanceScreen = () => {
           color="amber"
         />
 
-        {/* Información adicional */}
         <View className="bg-neutral-800/50 p-4 rounded-xl border border-neutral-700/30 mt-4">
           <View className="flex-row items-center">
             <Ionicons
@@ -200,7 +190,7 @@ const LeaveBalanceScreen = () => {
           </Text>
         </View>
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
