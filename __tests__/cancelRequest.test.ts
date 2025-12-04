@@ -18,7 +18,7 @@ describe("cancelRequest", () => {
     // Mock getDoc to return a pending request
     (getDoc as jest.Mock).mockResolvedValue({
       exists: () => true,
-      data: () => ({ aproved: null }),
+      data: () => ({ status: "pending" }),
     });
 
     await cancelRequest("req123");
@@ -29,7 +29,7 @@ describe("cancelRequest", () => {
   it("should throw error if request is already approved", async () => {
     (getDoc as jest.Mock).mockResolvedValue({
       exists: () => true,
-      data: () => ({ aproved: true }),
+      data: () => ({ status: "approved" }),
     });
 
     await expect(cancelRequest("req123")).rejects.toThrow("No se puede cancelar una solicitud ya procesada.");

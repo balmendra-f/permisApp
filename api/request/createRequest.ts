@@ -10,7 +10,7 @@ export const createRequest = async (solicitud: any) => {
     const dataToSave = {
       ...solicitud,
       userId,
-      aproved: null,
+      status: "pending",
       createdAt: serverTimestamp(),
     };
 

@@ -93,9 +93,9 @@ const PermissionsScreen = () => {
       }
   };
 
-  const pendientes = requests.filter((r: any) => r.aproved === null).length;
-  const aprobados = requests.filter((r: any) => r.aproved === true).length;
-  const denegados = requests.filter((r: any) => r.aproved === false).length;
+  const pendientes = requests.filter((r: any) => r.status === "pending").length;
+  const aprobados = requests.filter((r: any) => r.status === "approved").length;
+  const denegados = requests.filter((r: any) => r.status === "rejected").length;
 
   const StatCard = ({
     count,
@@ -146,14 +146,14 @@ const PermissionsScreen = () => {
       icon: "",
     };
 
-    if (item.aproved === null) {
+    if (item.status === "pending") {
       estadoConfig = {
         text: "Pendiente",
         bgColor: "bg-amber-500/20",
         textColor: "text-amber-400",
         icon: "time-outline",
       };
-    } else if (item.aproved === false) {
+    } else if (item.status === "rejected") {
       estadoConfig = {
         text: "Denegado",
         bgColor: "bg-red-500/20",
@@ -201,7 +201,7 @@ const PermissionsScreen = () => {
                 <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
                 <Text className="text-gray-400 ml-2 text-sm">{fechaFormateada}</Text>
             </View>
-            {item.aproved === null && (
+            {item.status === "pending" && (
                 <TouchableOpacity onPress={() => handleCancelRequest(item.id)}>
                     <Text className="text-red-400 text-sm font-semibold">Cancelar</Text>
                 </TouchableOpacity>

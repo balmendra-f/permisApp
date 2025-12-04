@@ -28,9 +28,9 @@ const PermissionsScreen = () => {
     return () => unsubscribe();
   }, [user?.id]);
 
-  const pendientes = requests.filter((r) => r.aproved === null).length;
-  const aprobados = requests.filter((r) => r.aproved === true).length;
-  const denegados = requests.filter((r) => r.aproved === false).length;
+  const pendientes = requests.filter((r) => r.status === "pending").length;
+  const aprobados = requests.filter((r) => r.status === "approved").length;
+  const denegados = requests.filter((r) => r.status === "rejected").length;
 
   const StatCard = ({
     count,
@@ -74,14 +74,14 @@ const PermissionsScreen = () => {
     })}`;
 
     let estadoConfig = { text: "", bgColor: "", textColor: "", icon: "" };
-    if (item.aproved === null) {
+    if (item.status === "pending") {
       estadoConfig = {
         text: "Pendiente",
         bgColor: "bg-amber-500/20",
         textColor: "text-amber-400",
         icon: "time-outline",
       };
-    } else if (item.aproved === false) {
+    } else if (item.status === "rejected") {
       estadoConfig = {
         text: "Denegado",
         bgColor: "bg-red-500/20",
