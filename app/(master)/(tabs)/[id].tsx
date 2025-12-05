@@ -12,8 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import getUserById from "@/api/users/getUserById";
-import updateUser from "@/api/users/updateUser";
+import { useGetUser, useUpdateUser } from "@/hooks/useUsers";
 import Screen from "@/components/common/Screen";
 
 interface User {
@@ -38,6 +37,8 @@ interface User {
 export default function UserDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { getUser } = useGetUser();
+  const { updateUser } = useUpdateUser();
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,7 +51,7 @@ export default function UserDetail() {
       if (!id) return;
 
       try {
-        const data = await getUserById(id as string);
+        const data = await getUser(id as string);
         setUser(data);
       } catch (error) {
         console.error("Error al cargar usuario:", error);
@@ -280,7 +281,7 @@ export default function UserDetail() {
 
 /* -------------------------- COMPONENTES LIMPIOS -------------------------- */
 
-function Field({ label, icon, value, editing, onChange }) {
+function Field({ label, icon, value, editing, onChange }: { label: string, icon: any, value: any, editing: boolean, onChange: (text: string) => void }) {
   return (
     <View className="mb-5">
       <View className="flex-row items-center mb-1">
@@ -301,7 +302,7 @@ function Field({ label, icon, value, editing, onChange }) {
   );
 }
 
-function NumberField({ label, icon, value, editing, onChange, color }) {
+function NumberField({ label, icon, value, editing, onChange, color }: { label: string, icon: any, value: any, editing: boolean, onChange: (text: string) => void, color: string }) {
   return (
     <View className="mb-4">
       <View className="flex-row items-center mb-1">
@@ -325,7 +326,7 @@ function NumberField({ label, icon, value, editing, onChange, color }) {
   );
 }
 
-function RoleRow({ icon, label, active }) {
+function RoleRow({ icon, label, active }: { icon: any, label: string, active?: boolean }) {
   return (
     <View className="flex-row items-center mb-3">
       <Ionicons

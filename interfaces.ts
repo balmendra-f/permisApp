@@ -1,6 +1,5 @@
 
-interface User {
-  uid(uid: any, arg1: (data: any) => void): unknown;
+export interface User {
   id: string;
   name: string;
   username: string;
@@ -11,5 +10,9 @@ interface User {
   vacationUsedInDays: number;
   administrativeDays: number;
   timeReturnsInHours: number;
+  section: string;
+  sectionBoss?: string;
+  isAdmin?: boolean;
+  isMaster?: boolean;
+  createdAt?: any;
 }
-

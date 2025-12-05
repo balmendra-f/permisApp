@@ -1,7 +1,6 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getRequestsBySection } from "@/api/request/getRequestBySection";
-import { getRequestsByUser } from "@/api/request/getRequestByUser";
+import { useRequestsListener } from "@/hooks/useRequests";
 import { useAuth } from "@/providers/AuthProvider";
 
 interface RequestsContextType {
@@ -28,6 +27,7 @@ export const RequestsProvider = ({
   onlyUserRequests = false,
 }: RequestsProviderProps) => {
   const { user } = useAuth();
+  const { getRequestsByUser, getRequestsBySection } = useRequestsListener();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 

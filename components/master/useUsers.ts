@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { db } from "@/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
-import updateUser from "@/api/users/updateUser";
+import { useUpdateUser } from "@/hooks/useUsers";
 
 interface User {
   id: string;
@@ -13,6 +13,7 @@ interface User {
 }
 
 export const useUsers = () => {
+  const { updateUser } = useUpdateUser();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());

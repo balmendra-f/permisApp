@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { useRequests } from "@/providers/RequestProvider";
-import { cancelRequest } from "@/api/request/cancelRequest";
+import { useCancelRequest } from "@/hooks/useRequests";
 import CustomModal from "@/components/common/Modal";
 import { useBoss } from "@/components/admin/hooks/useBoss";
 
@@ -20,6 +20,7 @@ const PermissionsScreen = () => {
   const { user } = useAuth();
   const username = user?.name;
   const { requests } = useRequests();
+  const { cancelRequest } = useCancelRequest();
   const [chiefModalVisible, setChiefModalVisible] = useState(false);
   const { chief, loadChief } = useBoss(user?.section);
 
@@ -132,7 +133,7 @@ const PermissionsScreen = () => {
           <View
             className={`px-3 py-2 rounded-full ${estadoConfig.bgColor} flex-row items-center ml-3`}
           >
-            <Ionicons name={estadoConfig.icon} size={14} color="white" />
+            <Ionicons name={estadoConfig.icon as any} size={14} color="white" />
             <Text
               className={`${estadoConfig.textColor} text-xs font-medium ml-1`}
             >

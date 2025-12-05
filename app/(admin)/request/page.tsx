@@ -19,7 +19,7 @@ import { getAuth } from "firebase/auth";
 import Screen from "@/components/common/Screen";
 import DateTimePicker from "@/components/common/DateTimePicker";
 import CustomModal, { colors } from "@/components/common/Modal";
-import { createRequest } from "@/api/request/createRequest";
+import { useCreateRequest } from "@/hooks/useRequests";
 import { useFileUpload } from "@/components/request/hook/UseFileUpload";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -45,6 +45,8 @@ export default function NuevaSolicitudForm() {
   const userId = auth.currentUser?.uid;
 
   const [tipoPermiso, setTipoPermiso] = useState("Vacaciones");
+
+  if (!user) return <ActivityIndicator />;
   const [tipoSaldo, setTipoSaldo] = useState("vacationsInDays");
   const [fechaInicio, setFechaInicio] = useState<Date | null>(new Date());
   const [fechaFin, setFechaFin] = useState<Date | null>(null);
@@ -53,6 +55,8 @@ export default function NuevaSolicitudForm() {
   const [modalVisible, setModalVisible] = useState(false);
   const [saldoModalVisible, setSaldoModalVisible] = useState(false);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
+
+  const { createRequest, loading: creatingRequest } = useCreateRequest();
 
   const {
     uploading,
@@ -396,10 +400,10 @@ export default function NuevaSolicitudForm() {
               <Pressable
                 onPress={handleSubmit}
                 className="flex-1 rounded-lg py-4 bg-blue-600 active:bg-blue-700"
-                disabled={uploading}
-                style={{ opacity: uploading ? 0.5 : 1 }}
+                disabled={uploading || creatingRequest}
+                style={{ opacity: uploading || creatingRequest ? 0.5 : 1 }}
               >
-                {uploading ? (
+                {uploading || creatingRequest ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <Text className="text-center text-base font-semibold text-white">

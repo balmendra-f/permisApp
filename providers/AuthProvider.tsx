@@ -8,10 +8,12 @@ import {
 } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
-import getUserById from "../api/users/getUserById";
+import { useGetUser } from "../hooks/useUsers";
 import { ActivityIndicator, View, Text } from "react-native";
+import { User } from "@/interfaces";
 
 const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const { getUser } = useGetUser();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -28,7 +30,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       }
 
       try {
-        const fetchedUser = await getUserById(currentUser.uid);
+        const fetchedUser = await getUser(currentUser.uid);
 
         if (!fetchedUser) {
           console.warn(

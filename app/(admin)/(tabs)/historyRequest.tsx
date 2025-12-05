@@ -1,25 +1,13 @@
 import { useAuth } from "@/providers/AuthProvider";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { View, Text } from "react-native";
 import Screen from "@/components/common/Screen";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/firebase";
 import { Ionicons } from "@expo/vector-icons";
+import { useUserListener } from "@/hooks/useUsers";
 
 const LeaveBalanceScreen = () => {
   const { user } = useAuth();
-  const [userData, setUserData] = useState<User | null>(user);
-
-  useEffect(() => {
-    const ref = doc(db, "users", user.id);
-    const unsubscribe = onSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        setUserData(snap.data() as User);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [user]);
+  const userData = useUserListener(user);
 
   if (!userData) return null;
 
