@@ -2,12 +2,12 @@ import { useAuth } from "@/providers/AuthProvider";
 import React from "react";
 import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useUserRealtime } from "@/components/users/hook/useUserRealtime";
+import { useUserListener } from "@/hooks/useUsers";
 import Screen from "@/components/common/Screen";
 
 const LeaveBalanceScreen = () => {
   const { user } = useAuth();
-  const userData = useUserRealtime(user);
+  const userData = useUserListener(user);
 
   if (!userData) return null;
 

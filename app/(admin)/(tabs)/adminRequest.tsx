@@ -3,15 +3,17 @@ import { View, Text, Pressable, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
-import { listenRequestsByUser } from "@/api/request/requestsService";
+import { useRequestsListener } from "@/hooks/useRequests";
 import Screen from "@/components/common/Screen";
 
 const PermissionsScreen = () => {
   const { user } = useAuth();
+  const { listenRequestsByUser } = useRequestsListener();
   const username = user?.name;
   const [requests, setRequests] = useState<any[]>([]);
 
   useEffect(() => {
+    if (!user) return;
     const unsubscribe = listenRequestsByUser(user.id, setRequests);
     return () => unsubscribe();
   }, [user?.id]);

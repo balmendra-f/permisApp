@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRequests } from "@/providers/RequestProvider";
-import { updateRequestById } from "@/api/request/updateById";
+import { useUpdateRequest } from "@/hooks/useRequests";
 import { useAuth } from "@/providers/AuthProvider";
 import Screen from "@/components/common/Screen";
 
@@ -32,6 +32,7 @@ interface Solicitud {
 
 export default function PanelAdmin() {
   const { requests, loading } = useRequests();
+  const { updateRequest } = useUpdateRequest();
   const { user } = useAuth();
   const section = user?.section;
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
@@ -76,7 +77,7 @@ export default function PanelAdmin() {
   const handleAprobar = async (id: string) => {
     try {
       setProcessingIds((prev) => new Set(prev).add(id));
-      await updateRequestById(id, { status: "approved", isPending: false });
+      await updateRequest(id, { status: "approved", isPending: false });
       Alert.alert(
         "Solicitud Aprobada",
         "La solicitud ha sido aprobada exitosamente"
@@ -104,7 +105,7 @@ export default function PanelAdmin() {
           onPress: async () => {
             try {
               setProcessingIds((prev) => new Set(prev).add(id));
-              await updateRequestById(id, {
+              await updateRequest(id, {
                 status: "rejected",
                 isPending: false,
               });

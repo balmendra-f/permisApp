@@ -6,7 +6,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "@/firebase";
-import createUser from "@/api/users/createUser.ts";
+import { useCreateUser } from "@/hooks/useUsers";
 import useCountry from "@/hooks/useCountry";
 import { useScreen } from "@/providers/ScreenProvider";
 import Header from "@/components/common/Header";
@@ -14,6 +14,7 @@ import Screen from "@/components/common/Screen";
 import useImageUpload from "@/hooks/useImageUpload";
 
 const SignUp = () => {
+  const { createUser, loading: creatingUser } = useCreateUser();
   const { imageUrl, isUploading } = useImageUpload();
   const { setIsLoading } = useScreen();
   const { countryCode } = useCountry();
@@ -231,13 +232,17 @@ const SignUp = () => {
 
         <Pressable
           onPress={onSubmit}
-          disabled={isFormIncomplete || isUploading}
+          disabled={isFormIncomplete || isUploading || creatingUser}
           className={`rounded-xl p-4 items-center mt-6 mb-4 ${
-            isFormIncomplete || isUploading ? "bg-gray-600" : "bg-indigo-700"
+            isFormIncomplete || isUploading || creatingUser
+              ? "bg-gray-600"
+              : "bg-indigo-700"
           }`}
         >
           <Text className="text-white text-base font-semibold">
-            {isUploading ? "Subiendo imagen..." : "Crear cuenta"}
+            {isUploading || creatingUser
+              ? "Creando cuenta..."
+              : "Crear cuenta"}
           </Text>
         </Pressable>
 

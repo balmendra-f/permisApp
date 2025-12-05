@@ -17,15 +17,14 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { getAuth } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/firebase";
 import Screen from "@/components/common/Screen";
 import DateTimePicker from "@/components/common/DateTimePicker";
 import CustomModal, { colors } from "@/components/common/Modal";
-import { createRequest } from "@/api/request/createRequest";
-import { getRequestsByUser } from "@/api/request/getRequestByUser";
+import { useCreateRequest, useRequestsListener } from "@/hooks/useRequests";
+import { useUserListener } from "@/hooks/useUsers";
 import { useFileUpload } from "@/components/request/hook/UseFileUpload";
 import { useAuth } from "@/providers/AuthProvider";
+import { User } from "@/interfaces";
 
 const tiposPermiso = [
   "Vacaciones",
@@ -49,19 +48,14 @@ export default function NuevaSolicitudForm() {
   const userId = auth.currentUser?.uid;
   const section = user?.section;
 
-  const [userData, setUserData] = useState<User | null>(user);
+  const { createRequest, loading: creatingRequest } = useCreateRequest();
+  const { getRequestsByUser } = useRequestsListener();
+
+  const userData = useUserListener(user);
   const [takenDates, setTakenDates] = useState<Date[]>([]);
 
   useEffect(() => {
       if (!user) return;
-
-      const ref = doc(db, "users", user.id);
-
-      const unsubscribe = onSnapshot(ref, (snap) => {
-        if (snap.exists()) {
-          setUserData(snap.data() as User);
-        }
-      });
 
       // Fetch user requests to mark taken dates
       const unsubscribeRequests = getRequestsByUser(user.id, (data: any[]) => {
@@ -85,7 +79,6 @@ export default function NuevaSolicitudForm() {
       });
 
       return () => {
-          unsubscribe();
           unsubscribeRequests();
       };
     }, [user]);
@@ -530,10 +523,10 @@ export default function NuevaSolicitudForm() {
               <Pressable
                 onPress={handleSubmit}
                 className="flex-1 rounded-lg py-4 bg-blue-600 active:bg-blue-700"
-                disabled={uploading}
-                style={{ opacity: uploading ? 0.5 : 1 }}
+                disabled={uploading || creatingRequest}
+                style={{ opacity: uploading || creatingRequest ? 0.5 : 1 }}
               >
-                {uploading ? (
+                {uploading || creatingRequest ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <Text className="text-center text-base font-semibold text-white">
