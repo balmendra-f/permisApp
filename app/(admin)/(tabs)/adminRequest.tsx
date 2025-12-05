@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, FlatList } from "react-native";
+import { View, Text, Pressable, FlatList, Alert, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuth } from "@/providers/AuthProvider";
 import { listenRequestsByUser } from "@/api/request/requestsService";
 import Screen from "@/components/common/Screen";
+import { cancelRequest } from "@/api/request/cancelRequest";
 
 const PermissionsScreen = () => {
   const { user } = useAuth();
@@ -19,6 +20,29 @@ const PermissionsScreen = () => {
   const pendientes = requests.filter((r) => r.status === "pending").length;
   const aprobados = requests.filter((r) => r.status === "approved").length;
   const denegados = requests.filter((r) => r.status === "rejected").length;
+
+  const handleCancelRequest = async (id: string) => {
+    Alert.alert(
+      "Cancelar Solicitud",
+      "¿Estás seguro de que deseas cancelar esta solicitud?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Sí, cancelar",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await cancelRequest(id);
+              Alert.alert("Éxito", "Solicitud cancelada correctamente.");
+            } catch (error) {
+              Alert.alert("Error", "No se pudo cancelar la solicitud.");
+              console.error(error);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const StatCard = ({
     count,
@@ -112,9 +136,21 @@ const PermissionsScreen = () => {
           </View>
         </View>
 
-        <View className="flex-row items-center pt-3 border-t border-neutral-700/50">
-          <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
-          <Text className="text-gray-400 ml-2 text-sm">{fechaFormateada}</Text>
+        <View className="flex-row justify-between items-center pt-3 border-t border-neutral-700/50">
+          <View className="flex-row items-center">
+            <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
+            <Text className="text-gray-400 ml-2 text-sm">
+              {fechaFormateada}
+            </Text>
+          </View>
+
+          {item.status === "pending" && (
+            <TouchableOpacity onPress={() => handleCancelRequest(item.id)}>
+              <Text className="text-red-400 text-sm font-semibold">
+                Cancelar
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
