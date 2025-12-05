@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   View,
   Text,
   ActivityIndicator,
   Pressable,
   ScrollView,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+
 import getUserById from "@/api/users/getUserById";
+import updateUser from "@/api/users/updateUser";
 import Screen from "@/components/common/Screen";
 
 interface User {
@@ -35,12 +38,17 @@ interface User {
 export default function UserDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
       if (!id) return;
+
       try {
         const data = await getUserById(id as string);
         setUser(data);
@@ -50,17 +58,41 @@ export default function UserDetail() {
         setLoading(false);
       }
     };
+
     fetchUser();
   }, [id]);
 
   const formatDate = (timestamp: any) => {
-    if (!timestamp || !timestamp.seconds) return "No disponible";
+    if (!timestamp?.seconds) return "No disponible";
+
     const date = new Date(timestamp.seconds * 1000);
     return date.toLocaleDateString("es-ES", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    setSaving(true);
+
+    const ok = await updateUser(user.id, {
+      name: user.name,
+      email: user.email,
+      section: user.section,
+      country: user.country,
+      vacationsInDays: user.vacationsInDays,
+      vacationUsedInDays: user.vacationUsedInDays,
+      administrativeDays: user.administrativeDays,
+      timeReturnsInHours: user.timeReturnsInHours,
+    });
+
+    setSaving(false);
+
+    if (ok) setEditing(false);
+    else alert("❌ Error al actualizar usuario");
   };
 
   if (loading) {
@@ -87,8 +119,9 @@ export default function UserDetail() {
   }
 
   return (
-    <Screen >
+    <Screen>
       <ScrollView contentContainerStyle={{ padding: 20 }}>
+        {/* VOLVER */}
         <Pressable
           onPress={() => router.back()}
           className="flex-row items-center mb-6 active:opacity-70"
@@ -97,165 +130,216 @@ export default function UserDetail() {
           <Text className="text-blue-500 ml-2">Volver</Text>
         </Pressable>
 
-
+        {/* INFO PRINCIPAL */}
         <View className="bg-gray-800 p-6 rounded-2xl shadow-md mb-4">
-          <Text className="text-white text-2xl font-bold mb-4">
-            {user.name || "Sin nombre"}
-          </Text>
+          {/* NOMBRE */}
+          <Field
+            label="Nombre"
+            icon="person"
+            editing={editing}
+            value={user.name}
+            onChange={(t) => setUser({ ...user, name: t })}
+          />
 
-          <View className="space-y-3">
-            <View className="flex-row items-center">
-              <Ionicons name="mail" size={18} color="#9CA3AF" />
-              <Text className="text-gray-400 ml-3">
-                {user.email || "Sin correo"}
-              </Text>
-            </View>
+          {/* EMAIL */}
+          <Field
+            label="Correo"
+            icon="mail"
+            editing={editing}
+            value={user.email}
+            onChange={(t) => setUser({ ...user, email: t })}
+          />
 
-            <View className="flex-row items-center">
-              <Ionicons name="briefcase" size={18} color="#9CA3AF" />
-              <Text className="text-gray-400 ml-3">
-                Sección: {user.section || "No asignada"}
-              </Text>
-            </View>
+          {/* SECCIÓN */}
+          <Field
+            label="Sección"
+            icon="briefcase"
+            editing={editing}
+            value={user.section}
+            onChange={(t) => setUser({ ...user, section: t })}
+          />
 
-            <View className="flex-row items-center">
-              <Ionicons name="location" size={18} color="#9CA3AF" />
-              <Text className="text-gray-400 ml-3">
-                País: {user.country || "No especificado"}
-              </Text>
-            </View>
+          {/* PAÍS */}
+          <Field
+            label="País"
+            icon="location"
+            editing={editing}
+            value={user.country}
+            onChange={(t) => setUser({ ...user, country: t })}
+          />
 
-            <View className="flex-row items-center">
+          {/* FECHA */}
+          <View className="mt-5">
+            <View className="flex-row items-center mb-1">
               <Ionicons name="calendar" size={18} color="#9CA3AF" />
-              <Text className="text-gray-400 ml-3">
-                Creado: {formatDate(user.createdAt)}
-              </Text>
+              <Text className="text-gray-400 ml-3">Creado</Text>
             </View>
+            <Text className="text-gray-400 ml-9">
+              {formatDate(user.createdAt)}
+            </Text>
           </View>
         </View>
 
-
+        {/* ROLES */}
         <View className="bg-gray-800 p-6 rounded-2xl shadow-md mb-4">
           <Text className="text-white text-lg font-bold mb-3">
             Roles y Permisos
           </Text>
 
-          <View className="space-y-2">
-            <View className="flex-row items-center">
-              <Ionicons
-                name={user.isMaster ? "star" : "star-outline"}
-                size={20}
-                color={user.isMaster ? "#F59E0B" : "#9CA3AF"}
-              />
-              <Text
-                className={`ml-3 text-base ${
-                  user.isMaster
-                    ? "text-amber-500 font-semibold"
-                    : "text-gray-400"
-                }`}
-              >
-                {user.isMaster ? "✓ Cuenta Master" : "Usuario regular"}
-              </Text>
-            </View>
+          <RoleRow icon="star" active={user.isMaster} label="Cuenta Master" />
 
-            <View className="flex-row items-center">
-              <Ionicons
-                name={user.isAdmin ? "shield" : "shield-outline"}
-                size={20}
-                color={user.isAdmin ? "#3B82F6" : "#9CA3AF"}
-              />
-              <Text
-                className={`ml-3 text-base ${
-                  user.isAdmin ? "text-blue-500 font-semibold" : "text-gray-400"
-                }`}
-              >
-                {user.isAdmin
-                  ? "✓ Administrador"
-                  : "Sin permisos administrativos"}
-              </Text>
-            </View>
-          </View>
+          <RoleRow icon="shield" active={user.isAdmin} label="Administrador" />
         </View>
 
-
+        {/* VACACIONES */}
         <View className="bg-gray-800 p-6 rounded-2xl shadow-md mb-4">
           <Text className="text-white text-lg font-bold mb-3">
             Vacaciones y Permisos
           </Text>
 
-          <View className="space-y-3">
-            <View className="flex-row justify-between items-center">
-              <View className="flex-row items-center">
-                <Ionicons name="sunny" size={18} color="#10B981" />
-                <Text className="text-gray-400 ml-3">Días de vacaciones</Text>
-              </View>
-              <Text className="text-white font-bold text-base">
-                {user.vacationsInDays ?? 0} días
-              </Text>
-            </View>
+          <NumberField
+            label="Días de vacaciones"
+            icon="sunny"
+            value={user.vacationsInDays}
+            color="#10B981"
+            editing={editing}
+            onChange={(t) =>
+              setUser({ ...user, vacationsInDays: Number(t) || 0 })
+            }
+          />
 
-            <View className="flex-row justify-between items-center">
-              <View className="flex-row items-center">
-                <Ionicons name="checkmark-circle" size={18} color="#EF4444" />
-                <Text className="text-gray-400 ml-3">Vacaciones usadas</Text>
-              </View>
-              <Text className="text-white font-bold text-base">
-                {user.vacationUsedInDays ?? 0} días
-              </Text>
-            </View>
+          <NumberField
+            label="Vacaciones usadas"
+            icon="checkmark-circle"
+            value={user.vacationUsedInDays}
+            color="#EF4444"
+            editing={editing}
+            onChange={(t) =>
+              setUser({ ...user, vacationUsedInDays: Number(t) || 0 })
+            }
+          />
 
-            <View className="flex-row justify-between items-center">
-              <View className="flex-row items-center">
-                <Ionicons name="document-text" size={18} color="#8B5CF6" />
-                <Text className="text-gray-400 ml-3">Días administrativos</Text>
-              </View>
-              <Text className="text-white font-bold text-base">
-                {user.administrativeDays ?? 0} días
-              </Text>
-            </View>
+          <NumberField
+            label="Días administrativos"
+            icon="document-text"
+            value={user.administrativeDays}
+            color="#8B5CF6"
+            editing={editing}
+            onChange={(t) =>
+              setUser({ ...user, administrativeDays: Number(t) || 0 })
+            }
+          />
 
-            <View className="flex-row justify-between items-center">
-              <View className="flex-row items-center">
-                <Ionicons name="time" size={18} color="#F59E0B" />
-                <Text className="text-gray-400 ml-3">Horas de regreso</Text>
-              </View>
-              <Text className="text-white font-bold text-base">
-                {user.timeReturnsInHours ?? 0} hrs
-              </Text>
-            </View>
-          </View>
-
-
-          <View className="mt-4 pt-4 border-t border-gray-700">
-            <Text className="text-gray-400 text-sm mb-2">
-              Vacaciones disponibles
-            </Text>
-            <View className="h-2 bg-gray-700 rounded-full overflow-hidden">
-              <View
-                className="h-full bg-green-500"
-                style={{
-                  width: `${
-                    (((user.vacationsInDays ?? 0) -
-                      (user.vacationUsedInDays ?? 0)) /
-                      (user.vacationsInDays || 1)) *
-                    100
-                  }%`,
-                }}
-              />
-            </View>
-            <Text className="text-gray-400 text-xs mt-1">
-              {(user.vacationsInDays ?? 0) - (user.vacationUsedInDays ?? 0)} de{" "}
-              {user.vacationsInDays ?? 0} días disponibles
-            </Text>
-          </View>
+          <NumberField
+            label="Horas de regreso"
+            icon="time"
+            value={user.timeReturnsInHours}
+            color="#F59E0B"
+            editing={editing}
+            onChange={(t) =>
+              setUser({ ...user, timeReturnsInHours: Number(t) || 0 })
+            }
+          />
         </View>
 
-
+        {/* ID */}
         <View className="bg-gray-800 p-4 rounded-2xl shadow-md">
           <Text className="text-gray-500 text-xs mb-1">ID de Usuario</Text>
           <Text className="text-gray-400 text-xs font-mono">{user.id}</Text>
         </View>
+
+        {/* BOTONES */}
+        <View className="mt-6">
+          {!editing ? (
+            <Pressable
+              onPress={() => setEditing(true)}
+              className="bg-blue-600 p-3 rounded-xl"
+            >
+              <Text className="text-white text-center font-semibold">
+                Editar usuario
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={handleSave}
+              disabled={saving}
+              className={`p-3 rounded-xl ${
+                saving ? "bg-gray-500" : "bg-green-600"
+              }`}
+            >
+              <Text className="text-white text-center font-semibold">
+                {saving ? "Guardando..." : "Guardar cambios"}
+              </Text>
+            </Pressable>
+          )}
+        </View>
       </ScrollView>
     </Screen>
+  );
+}
+
+/* -------------------------- COMPONENTES LIMPIOS -------------------------- */
+
+function Field({ label, icon, value, editing, onChange }) {
+  return (
+    <View className="mb-5">
+      <View className="flex-row items-center mb-1">
+        <Ionicons name={icon} size={18} color="#9CA3AF" />
+        <Text className="text-gray-300 ml-3">{label}</Text>
+      </View>
+
+      {editing ? (
+        <TextInput
+          value={value || ""}
+          onChangeText={onChange}
+          className="bg-gray-700 text-white px-3 py-2 rounded-lg mt-1"
+        />
+      ) : (
+        <Text className="text-gray-400 ml-9">{value || "-"}</Text>
+      )}
+    </View>
+  );
+}
+
+function NumberField({ label, icon, value, editing, onChange, color }) {
+  return (
+    <View className="mb-4">
+      <View className="flex-row items-center mb-1">
+        <Ionicons name={icon} size={18} color={color} />
+        <Text className="text-gray-300 ml-3">{label}</Text>
+      </View>
+
+      {editing ? (
+        <TextInput
+          value={String(value ?? 0)}
+          keyboardType="numeric"
+          onChangeText={onChange}
+          className="bg-gray-700 text-white px-3 py-2 rounded-lg w-28 mt-1"
+        />
+      ) : (
+        <Text className="text-gray-400 ml-9">
+          {value ?? 0} {label.includes("Horas") ? "hrs" : "días"}
+        </Text>
+      )}
+    </View>
+  );
+}
+
+function RoleRow({ icon, label, active }) {
+  return (
+    <View className="flex-row items-center mb-3">
+      <Ionicons
+        name={active ? icon : `${icon}-outline`}
+        size={20}
+        color={active ? "#3B82F6" : "#9CA3AF"}
+      />
+      <Text
+        className={`ml-3 ${
+          active ? "text-blue-400 font-semibold" : "text-gray-400"
+        }`}
+      >
+        {active ? `✓ ${label}` : label}
+      </Text>
+    </View>
   );
 }
